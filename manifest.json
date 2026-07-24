@@ -1,0 +1,40 @@
+{
+  "name": "JEE Battle Royale Tracker",
+  "short_name": "JEE Tracker",
+  "description": "Track your JEE prep — chapters, tests, streaks, leaderboard, and more.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0710",
+  "theme_color": "#170d20",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log Today's Questions",
+      "short_name": "Log Today",
+      "description": "Jump straight to today's daily question log",
+      "url": "./index.html?tab=daily&action=present",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Leaderboard",
+      "short_name": "Leaderboard",
+      "description": "See where you rank",
+      "url": "./index.html?tab=leaderboard",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Tests",
+      "short_name": "Tests",
+      "description": "Log or review a test",
+      "url": "./index.html?tab=tests",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}
