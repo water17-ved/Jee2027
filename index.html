@@ -50,17 +50,6 @@
   .table-scroll::-webkit-scrollbar { height: 5px; }
   .table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
 
-  /* Vertical scroll wrapper for the Chapter Analysis card list — keeps the tab usable
-     when a subject has many chapters, instead of forcing one very long page scroll. */
-  .analysis-cards-scroll {
-    max-height: 62vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
-    padding-right: 4px; margin-bottom: 14px;
-    border: 1px solid var(--border); border-radius: 10px;
-  }
-  .analysis-cards-scroll::-webkit-scrollbar { width: 6px; }
-  .analysis-cards-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
-  .analysis-cards-scroll .analysis-chapter-card:first-child { margin-top: 0; }
-
   @media (max-width: 600px) {
     html { font-size: 13px; }
     body { padding: 12px; }
@@ -2442,9 +2431,9 @@
 </style>
 <!-- Firebase (used only for: login accounts + the shared online leaderboard. All tracker
      progress/tests/questions stay 100% local/offline via localStorage, untouched by this.) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script async src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script async src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script async src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <!-- Secondary Firebase app (separate web-app registration in the same project, adds
      Analytics + Realtime Database). Kept isolated from the primary app above. -->
 <script async src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
@@ -3779,44 +3768,10 @@ function buildOwnStats() {
   };
 }
 
-// Build the fuller snapshot shared with the teacher dashboard: stats + activity logs,
-// but never the raw chapter-by-chapter checklist state (progressData is intentionally omitted).
-function buildTeacherSyncPayload() {
-  const own = buildOwnStats();
-  return {
-    ...own,
-    email: (currentUser && currentUser.email) || '',
-    streak: {
-      current: (typeof streakData !== 'undefined' && streakData.currentStreak) || 0,
-      longest: (typeof streakData !== 'undefined' && streakData.longestStreak) || 0
-    },
-    dailyQuestions: (typeof dailyQuestions !== 'undefined' ? dailyQuestions : []).slice(0, 200),
-    chapterTests: (typeof chapterTests !== 'undefined' ? chapterTests : []).slice(0, 200),
-    majorTests: (typeof majorTests !== 'undefined' ? majorTests : []).slice(0, 100),
-    advChapterTests: (typeof advChapterTests !== 'undefined' ? advChapterTests : []).slice(0, 200),
-    advMajorTests: (typeof advMajorTests !== 'undefined' ? advMajorTests : []).slice(0, 100),
-    customTests: (typeof customTests !== 'undefined' ? customTests : []).slice(0, 200),
-    coachingLog: (typeof coachingLog !== 'undefined' ? coachingLog : []).slice(0, 200),
-    studyHours: (typeof studyHours !== 'undefined' ? studyHours : []).slice(0, 200)
-  };
-}
-
-// Push the fuller snapshot (stats + logs, no checklists) to a Firestore doc a teacher can read.
-// Independent of the leaderboard's "show me on leaderboard" toggle — that toggle only affects
-// visibility to other students, not to allow-listed teachers.
-async function syncTeacherData() {
-  if (!currentUser || currentUser.uid === 'local') return;
-  if (!FIREBASE_ENABLED || !fbDb) return;
-  try {
-    await fbDb.collection('studentData').doc(currentUser.uid).set(buildTeacherSyncPayload(), { merge: true });
-  } catch (e) { console.error('Teacher-data sync error:', e); }
-}
-
 // Push this player's current stats to the shared Firestore leaderboard doc (their own uid only),
 // or — if Firebase isn't configured — just keep it in the local-only leaderboardEntries array.
 async function syncLeaderboard() {
   if (!currentUser) return;
-  syncTeacherData(); // fire-and-forget: teacher sync is independent of leaderboard visibility below
   if (!lbVisible) return; // opted out — don't (re)appear on the leaderboard
   const stats = buildOwnStats();
   if (FIREBASE_ENABLED && fbDb && currentUser.uid !== 'local') {
@@ -6118,7 +6073,7 @@ function renderSubjectAnalysisDetail() {
       ${barChartHtml}
     </div>
 
-    <div class="analysis-chapter-list analysis-cards-scroll">${chapterCardsHtml}</div>
+    <div class="analysis-chapter-list">${chapterCardsHtml}</div>
 
     <div class="analysis-section-block">
       ${yearSectionHtml}
