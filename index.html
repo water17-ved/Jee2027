@@ -3305,7 +3305,7 @@
   <div id="coaching" class="tab-content">
     <div class="levelup-guide">
       <h2>📘 What Got Taught Today</h2>
-      <p style="font-size:0.8rem; margin: -6px 0 12px 0; color: var(--text-muted);">Log what your coaching covered and any homework given. Turn on Reminders (Data tab) and this app will notify you in the evening if homework's still pending, and later to revise what was taught.</p>
+      <p style="font-size:0.8rem; margin: -6px 0 12px 0; color: var(--text-muted);">Log what your coaching covered and any homework given. Turn on Reminders (Data tab) and this app will notify you at your chosen reminder time if homework's still pending, and later to revise what was taught.</p>
       <div class="add-form">
         <input id="cl-date" type="date">
         <select id="cl-subject">
@@ -3511,9 +3511,9 @@
       <div class="settings-group-box">
         <div class="log-section">
           <h2>🧭 Navigation Bar Position</h2>
-          <p style="font-size:0.83rem; color: var(--text-muted); margin-bottom:16px;">On phones, the bottom navigation bar can be dragged anywhere on screen by its top grip (⠿⠿) — handy if it ever overlaps content on an unusual screen size or in landscape. Lock it once you've found a good spot so it can't be moved by accident, or reset it back to the default bottom-center position.</p>
+          <p style="font-size:0.83rem; color: var(--text-muted); margin-bottom:16px;">The bottom navigation bar starts locked in place so it can't be moved by accident. Unlock it to drag it anywhere on screen by its top grip (⠿⠿) — handy if it ever overlaps content on an unusual screen size or in landscape — then lock it again once you've found a good spot. Reset returns it to the default bottom-center position.</p>
           <div class="util-bar">
-            <button class="util-btn util-btn-cyan" id="settings-nav-lock-btn" onclick="toggleNavLock(event)">🔓 Position: Unlocked</button>
+            <button class="util-btn util-btn-danger" id="settings-nav-lock-btn" onclick="toggleNavLock(event)">🔒 Position: Locked</button>
             <button class="util-btn" onclick="resetNavPosition(event)">⟲ Reset Position</button>
           </div>
         </div>
@@ -3557,6 +3557,17 @@
             <button class="util-btn util-btn-cyan" id="haptics-toggle-btn" onclick="toggleHaptics()">📳 Haptics: On</button>
             <button class="util-btn" onclick="testHaptics()">🧪 Test Vibration</button>
           </div>
+          <p style="font-size:0.78rem; color: var(--text-muted); margin: 14px 0 8px;">Preview each sound:</p>
+          <div class="util-bar">
+            <button class="util-btn" onclick="previewSfx('check')">✅ Check</button>
+            <button class="util-btn" onclick="previewSfx('click')">👆 Click</button>
+            <button class="util-btn" onclick="previewSfx('success')">🎉 Success</button>
+            <button class="util-btn" onclick="previewSfx('levelup')">⬆️ Level Up</button>
+            <button class="util-btn" onclick="previewSfx('streak')">🔥 Streak</button>
+            <button class="util-btn" onclick="previewSfx('delete')">🗑️ Delete</button>
+            <button class="util-btn" onclick="previewSfx('error')">🚫 Error</button>
+            <button class="util-btn" onclick="previewSfx('whoosh')">💨 Whoosh</button>
+          </div>
         </div>
 
         <div class="log-section">
@@ -3572,7 +3583,13 @@
 
         <div class="log-section">
           <h2>🔔 Streak Reminders</h2>
-          <p style="font-size:0.83rem; color: var(--text-muted); margin-bottom:16px;">If enabled, and this tab is left open in the background, you'll get a local notification in the evening on days you haven't logged anything yet. Since this is a fully offline app with no server, reminders only fire while the app/browser is actually running — not a guaranteed background push like WhatsApp notifications.</p>
+          <p style="font-size:0.83rem; color: var(--text-muted); margin-bottom:16px;">If enabled, and this tab is left open in the background, you'll get a local notification at your chosen time on days you haven't logged anything yet. Since this is a fully offline app with no server, reminders only fire while the app/browser is actually running — not a guaranteed background push like WhatsApp notifications.</p>
+          <div class="util-bar" style="margin-bottom:12px;">
+            <label for="notif-time-input" style="font-size:0.83rem; color: var(--text-muted); display:flex; align-items:center; gap:8px;">
+              Reminder time
+              <input type="time" id="notif-time-input" value="20:00" onchange="saveNotifTime()" style="background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); border-radius: 6px; padding: 6px 8px; font-family: var(--font-body);">
+            </label>
+          </div>
           <div class="util-bar">
             <button class="util-btn util-btn-violet" id="notif-toggle-btn" onclick="toggleStreakReminders()">🔔 Reminders: Off</button>
           </div>
@@ -3622,7 +3639,7 @@
 
       <div class="manual-block">
         <h3>🧭 Moving the Navigation Bar</h3>
-        <p>On phones, grab the small dotted strip (⠿⠿) along the top edge of the bottom navigation bar and drag it anywhere on screen — handy if it ever ends up overlapping content on an unusual screen size or in landscape. Its position is remembered next time you open the app. Manage it anytime from <strong>Settings → 🎨 Customization → 🧭 Navigation Bar Position</strong>: lock it in place once you've found a good spot, or reset it back to the default.</p>
+        <p>The bottom navigation bar starts <strong>locked in place</strong> so it can't be moved by accident. To reposition it, go to <strong>Settings → 🎨 Customization → 🧭 Navigation Bar Position</strong> and unlock it — then grab the small dotted strip (⠿⠿) along its top edge and drag it anywhere on screen (handy if it ever overlaps content on an unusual screen size or in landscape). Lock it again once you've found a good spot; its position is remembered next time you open the app. You can also reset it back to the default from that same Settings screen.</p>
       </div>
 
       <div class="manual-block">
@@ -3786,7 +3803,7 @@
 
       <div class="manual-block">
         <h3>🔔 Streak Reminders</h3>
-        <p>Data tab toggle — asks for notification permission, then checks in the evening (8pm+) whether you've logged anything today. If not, it fires a local reminder. Since this app has no server, this only works while the app/browser is actually open and running in the background — it's not a guaranteed always-on push notification like WhatsApp or Instagram use.</p>
+        <p>Data tab toggle — asks for notification permission, then checks at your chosen reminder time (set right next to the toggle, default 8:00 PM) whether you've logged anything today. If not, it fires a local reminder. Since this app has no server, this only works while the app/browser is actually open and running in the background — it's not a guaranteed always-on push notification like WhatsApp or Instagram use.</p>
       </div>
 
       <div class="manual-block">
@@ -4268,26 +4285,95 @@ async function initAuthWatcher() {
 const SFX = {
   ctx: null,
   enabled: true,
+  master: null,
+  noiseBuffer: null,
 
   init() {
     if (this.ctx) return;
-    try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
-    catch (e) { this.ctx = null; }
+    try {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // Shared mastering chain: a gentle compressor glues layered/overlapping notes
+      // together and stops anything from clipping, so stacked tones+noise stay clean.
+      const comp = this.ctx.createDynamicsCompressor();
+      comp.threshold.setValueAtTime(-18, this.ctx.currentTime);
+      comp.knee.setValueAtTime(24, this.ctx.currentTime);
+      comp.ratio.setValueAtTime(4, this.ctx.currentTime);
+      comp.attack.setValueAtTime(0.003, this.ctx.currentTime);
+      comp.release.setValueAtTime(0.15, this.ctx.currentTime);
+      comp.connect(this.ctx.destination);
+      this.master = comp;
+      // One shared 1s white-noise buffer, reused (with different filters/envelopes)
+      // for every percussive "tick"/"crackle"/"sweep" texture below.
+      const len = this.ctx.sampleRate;
+      this.noiseBuffer = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+      const data = this.noiseBuffer.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    } catch (e) { this.ctx = null; }
   },
 
-  tone(freq, duration, waveform, delay, vol) {
+  // A single oscillator voice with its own gain envelope, optional filter, optional
+  // pitch glide (glideTo), and optional stereo placement.
+  tone(freq, duration, waveform, delay, vol, opts) {
     if (!this.enabled || !this.ctx) return;
+    opts = opts || {};
     const t = this.ctx.currentTime + (delay || 0);
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = waveform || 'sine';
     osc.frequency.setValueAtTime(freq, t);
+    if (opts.glideTo) osc.frequency.exponentialRampToValueAtTime(Math.max(1, opts.glideTo), t + duration);
+    if (opts.vibratoHz) {
+      const lfo = this.ctx.createOscillator();
+      const lfoGain = this.ctx.createGain();
+      lfo.frequency.setValueAtTime(opts.vibratoHz, t);
+      lfoGain.gain.setValueAtTime(opts.vibratoDepth || 8, t);
+      lfo.connect(lfoGain).connect(osc.frequency);
+      lfo.start(t); lfo.stop(t + duration + 0.03);
+    }
     gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.linearRampToValueAtTime(vol == null ? 0.16 : vol, t + 0.008);
+    gain.gain.linearRampToValueAtTime(vol == null ? 0.16 : vol, t + (opts.attack || 0.008));
     gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
-    osc.connect(gain).connect(this.ctx.destination);
+
+    let node = osc;
+    if (opts.filterType) {
+      const filt = this.ctx.createBiquadFilter();
+      filt.type = opts.filterType;
+      filt.frequency.setValueAtTime(opts.filterFreq || 1200, t);
+      if (opts.filterQ) filt.Q.setValueAtTime(opts.filterQ, t);
+      node.connect(filt); node = filt;
+    }
+    node.connect(gain);
+    if (opts.pan !== undefined && this.ctx.createStereoPanner) {
+      const panner = this.ctx.createStereoPanner();
+      panner.pan.setValueAtTime(opts.pan, t);
+      gain.connect(panner).connect(this.master);
+    } else {
+      gain.connect(this.master);
+    }
     osc.start(t);
     osc.stop(t + duration + 0.03);
+  },
+
+  // Filtered-noise burst — the percussive "tick"/"crackle"/"thud"/"sweep" texture
+  // layered under tones to make them feel tactile rather than pure beeps.
+  noiseBurst(duration, filterType, filterFreq, delay, vol, opts) {
+    if (!this.enabled || !this.ctx || !this.noiseBuffer) return;
+    opts = opts || {};
+    const t = this.ctx.currentTime + (delay || 0);
+    const src = this.ctx.createBufferSource();
+    src.buffer = this.noiseBuffer;
+    const filt = this.ctx.createBiquadFilter();
+    filt.type = filterType || 'bandpass';
+    filt.frequency.setValueAtTime(filterFreq || 1500, t);
+    if (opts.filterFreqTo) filt.frequency.exponentialRampToValueAtTime(Math.max(1, opts.filterFreqTo), t + duration);
+    filt.Q.setValueAtTime(opts.q || 1, t);
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.linearRampToValueAtTime(vol == null ? 0.1 : vol, t + (opts.attack || 0.004));
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+    src.connect(filt).connect(gain).connect(this.master);
+    src.start(t);
+    src.stop(t + duration + 0.03);
   },
 
   play(name) {
@@ -4299,40 +4385,60 @@ const SFX = {
 
     switch (name) {
       case 'check':
-        this.tone(660, 0.09, 'triangle', 0, 0.14);
-        this.tone(880, 0.12, 'triangle', 0.04, 0.12);
+        // Tactile "snap" — a filtered noise tick under a bright two-note rise.
+        this.noiseBurst(0.03, 'highpass', 3200, 0, 0.09);
+        this.tone(660, 0.08, 'triangle', 0, 0.13);
+        this.tone(880, 0.11, 'triangle', 0.045, 0.12, { filterType: 'lowpass', filterFreq: 4000 });
         break;
       case 'uncheck':
-        this.tone(340, 0.10, 'triangle', 0, 0.12);
+        this.tone(340, 0.11, 'triangle', 0, 0.11, { filterType: 'lowpass', filterFreq: 1400, glideTo: 260 });
         break;
       case 'click':
-        this.tone(520, 0.05, 'square', 0, 0.06);
+        // A short filtered tick reads as a real UI click rather than a pure beep.
+        this.noiseBurst(0.025, 'highpass', 2800, 0, 0.07);
+        this.tone(520, 0.045, 'square', 0, 0.05);
         break;
       case 'success':
-        this.tone(523.25, 0.10, 'triangle', 0, 0.14);
-        this.tone(659.25, 0.10, 'triangle', 0.08, 0.14);
-        this.tone(783.99, 0.18, 'triangle', 0.16, 0.14);
+        this.tone(523.25, 0.11, 'triangle', 0, 0.13);
+        this.tone(523.25, 0.11, 'sine', 0, 0.05);
+        this.tone(659.25, 0.11, 'triangle', 0.08, 0.13);
+        this.tone(783.99, 0.20, 'triangle', 0.16, 0.13, { filterType: 'lowpass', filterFreq: 5000 });
+        this.tone(1046.50, 0.18, 'sine', 0.16, 0.05); // quiet octave shimmer on top
         break;
       case 'levelup':
-        this.tone(523.25, 0.12, 'sawtooth', 0, 0.12);
-        this.tone(659.25, 0.12, 'sawtooth', 0.10, 0.12);
-        this.tone(783.99, 0.12, 'sawtooth', 0.20, 0.12);
-        this.tone(1046.50, 0.24, 'sawtooth', 0.30, 0.14);
+        // Sub thump for impact, ascending arpeggio with a gentle stereo sweep, then
+        // a bright noise sparkle on the final note.
+        this.tone(90, 0.16, 'sine', 0, 0.15);
+        this.tone(523.25, 0.12, 'sawtooth', 0, 0.11, { filterType: 'lowpass', filterFreq: 2600, pan: -0.3 });
+        this.tone(659.25, 0.12, 'sawtooth', 0.10, 0.11, { filterType: 'lowpass', filterFreq: 2800, pan: -0.1 });
+        this.tone(783.99, 0.12, 'sawtooth', 0.20, 0.11, { filterType: 'lowpass', filterFreq: 3200, pan: 0.1 });
+        this.tone(1046.50, 0.26, 'sawtooth', 0.30, 0.13, { filterType: 'lowpass', filterFreq: 4200, pan: 0.3 });
+        this.noiseBurst(0.35, 'highpass', 6000, 0.30, 0.05, { filterFreqTo: 12000 });
         break;
       case 'streak':
-        this.tone(784.0, 0.10, 'triangle', 0, 0.14);
-        this.tone(987.77, 0.16, 'triangle', 0.09, 0.14);
+        // Warm tone with a flickering filtered-noise "crackle" underneath, to nod
+        // at the 🔥 streak theme without being a literal fire sound.
+        this.tone(784.0, 0.10, 'triangle', 0, 0.13);
+        this.tone(987.77, 0.17, 'triangle', 0.09, 0.13, { filterType: 'lowpass', filterFreq: 4500 });
+        this.noiseBurst(0.10, 'bandpass', 2200, 0.02, 0.045, { q: 2 });
+        this.noiseBurst(0.08, 'bandpass', 3000, 0.11, 0.035, { q: 2 });
         break;
       case 'delete':
-        this.tone(320, 0.08, 'sawtooth', 0, 0.10);
-        this.tone(180, 0.14, 'sawtooth', 0.06, 0.10);
+        this.tone(320, 0.09, 'sawtooth', 0, 0.09, { glideTo: 140 });
+        this.noiseBurst(0.12, 'bandpass', 900, 0.03, 0.08, { filterFreqTo: 300, q: 1.5 });
         break;
       case 'error':
-        this.tone(190, 0.15, 'square', 0, 0.10);
-        this.tone(140, 0.20, 'square', 0.10, 0.10);
+        // Slightly dissonant two-tone buzzer with a wobble, plus a thin buzzy noise
+        // layer — reads as a clear "no" without being harsh.
+        this.tone(196, 0.16, 'square', 0, 0.09, { vibratoHz: 28, vibratoDepth: 10 });
+        this.tone(185, 0.20, 'square', 0.09, 0.09, { vibratoHz: 28, vibratoDepth: 10 });
+        this.noiseBurst(0.30, 'lowpass', 500, 0, 0.035);
         break;
       case 'whoosh':
-        for (let i = 0; i < 8; i++) this.tone(620 - i * 55, 0.06, 'sine', i * 0.02, 0.06);
+        // A real filtered-noise sweep layered under the tone stairsteps reads as
+        // actual air movement instead of a pure descending glissando.
+        this.noiseBurst(0.26, 'bandpass', 3500, 0, 0.06, { filterFreqTo: 400, q: 0.7 });
+        for (let i = 0; i < 8; i++) this.tone(620 - i * 55, 0.06, 'sine', i * 0.02, 0.05);
         break;
       default:
         this.tone(500, 0.08, 'sine', 0, 0.1);
@@ -4362,6 +4468,15 @@ const HAPTICS = {
     catch (e) { return false; }
   }
 };
+
+// Lets a student audition any sound from Settings even if Sound Effects is currently
+// toggled off — doesn't change their actual preference, just plays it once.
+function previewSfx(name) {
+  const wasEnabled = SFX.enabled;
+  SFX.enabled = true;
+  SFX.play(name);
+  SFX.enabled = wasEnabled;
+}
 
 function testHaptics() {
   if (!HAPTICS.supported) {
@@ -4875,17 +4990,41 @@ function renderFontPicker() {
 // server behind it, so it's not a guaranteed background notification like a native app.
 let notifEnabled = false;
 let notifWatcherId = null;
+let notifReminderMinutes = 20 * 60; // default 8:00 PM, in minutes since midnight — overridden by loadNotifPref()
 
 async function loadNotifPref() {
   let saved = null;
   try { saved = await loadKey('jee-notif-enabled'); } catch (e) { saved = null; }
   notifEnabled = !!saved && ('Notification' in window) && Notification.permission === 'granted';
+
+  let savedTime = null;
+  try { savedTime = await loadKey('jee-notif-time'); } catch (e) { savedTime = null; }
+  if (savedTime && typeof savedTime.hour === 'number' && typeof savedTime.minute === 'number') {
+    notifReminderMinutes = savedTime.hour * 60 + savedTime.minute;
+  }
+  const timeInput = document.getElementById('notif-time-input');
+  if (timeInput) {
+    const h = Math.floor(notifReminderMinutes / 60), m = notifReminderMinutes % 60;
+    timeInput.value = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+  }
+
   updateNotifToggleUI();
   if (notifEnabled) startNotifWatcher();
 }
 
 async function saveNotifPref() {
   try { await localDB.set('jee-notif-enabled', JSON.stringify(notifEnabled), false); } catch (e) { /* ignore */ }
+}
+
+async function saveNotifTime() {
+  const input = document.getElementById('notif-time-input');
+  if (!input || !input.value) return;
+  const [h, m] = input.value.split(':').map(Number);
+  if (isNaN(h) || isNaN(m)) return;
+  notifReminderMinutes = h * 60 + m;
+  try { await localDB.set('jee-notif-time', JSON.stringify({ hour: h, minute: m }), false); } catch (e) { /* ignore */ }
+  flashStatus('Reminder time set to ' + input.value);
+  SFX.play('click');
 }
 
 function updateNotifToggleUI() {
@@ -4914,7 +5053,11 @@ async function toggleStreakReminders() {
       }
       notifEnabled = true;
       startNotifWatcher();
-      flashStatus('Streak reminders enabled ✓');
+      const delivered = await showAppNotification('🔔 Reminders are on', {
+        body: 'This is a test notification — if you can see it, reminders will work.',
+        icon: 'icon-192.png', tag: 'jee-notif-test'
+      });
+      flashStatus(delivered ? 'Streak reminders enabled ✓ (check your notification shade)' : 'Reminders enabled, but the test notification failed to send — see console');
     } else {
       notifEnabled = false;
       stopNotifWatcher();
@@ -4942,10 +5085,40 @@ function stopNotifWatcher() {
   if (notifWatcherId) { clearInterval(notifWatcherId); notifWatcherId = null; }
 }
 
+// Android Chrome (and most mobile Chromium browsers) throw "Illegal constructor" on
+// `new Notification(...)` — on those browsers, notifications MUST go through a
+// registered Service Worker's showNotification() instead. Desktop browsers support
+// both, so this always prefers the Service Worker route when one's available and
+// only falls back to the direct constructor if not (e.g. no SW yet, or running from
+// a local file rather than actually hosted). This replaces every raw `new
+// Notification(...)` call in the app — those were failing silently on Android.
+async function showAppNotification(title, options) {
+  try {
+    if ('serviceWorker' in navigator) {
+      const reg = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('sw-not-ready-in-time')), 2000))
+      ]);
+      if (reg && typeof reg.showNotification === 'function') {
+        await reg.showNotification(title, options);
+        return true;
+      }
+    }
+  } catch (e) { /* fall through to the direct constructor below */ }
+
+  try {
+    new Notification(title, options);
+    return true;
+  } catch (e) {
+    console.error('Notification delivery failed (both Service Worker and direct constructor):', e);
+    return false;
+  }
+}
+
 async function checkStreakReminder() {
   if (!notifEnabled || !('Notification' in window) || Notification.permission !== 'granted') return;
   const now = new Date();
-  if (now.getHours() < 20) return; // only nudge in the evening (8pm+)
+  if (now.getHours() * 60 + now.getMinutes() < notifReminderMinutes) return; // wait until the student's chosen reminder time
 
   const today = dateStr(0);
   if (streakData.lastActiveDate === today) return; // already active today
@@ -4955,7 +5128,7 @@ async function checkStreakReminder() {
   if (lastNotified === today) return; // already nudged today
 
   try {
-    new Notification('🔥 Keep your streak alive!', {
+    await showAppNotification('🔥 Keep your streak alive!', {
       body: `No activity logged today yet — your ${streakData.currentStreak || 0}-day streak is on the line.`,
       icon: 'icon-192.png',
       tag: 'jee-streak-reminder'
@@ -4968,6 +5141,9 @@ async function checkStreakReminder() {
 async function checkStudyReminderNotif() {
   if (!notifEnabled || !('Notification' in window) || Notification.permission !== 'granted') return;
   if (typeof computeStudyReminders !== 'function') return; // defined later in the file; safe no-op until loaded
+
+  const now = new Date();
+  if (now.getHours() * 60 + now.getMinutes() < notifReminderMinutes) return; // wait until the student's chosen reminder time
 
   const today = dateStr(0);
   let lastNotified = null;
@@ -4987,7 +5163,7 @@ async function checkStudyReminderNotif() {
   }
 
   try {
-    new Notification('📅 Study reminder', { body, icon: 'icon-192.png', tag: 'jee-study-reminder' });
+    await showAppNotification('📅 Study reminder', { body, icon: 'icon-192.png', tag: 'jee-study-reminder' });
   } catch (e) { /* ignore */ }
 
   try { await localDB.set('jee-study-reminder-last-notified', JSON.stringify(today), false); } catch (e) { /* ignore */ }
@@ -6683,7 +6859,7 @@ function setAllCollapsed(subjectKey, collapsed) {
 // ---------- Draggable bottom-nav position (grab the handle, drop it anywhere, lock it) ----------
 const NAV_POS_KEY = 'jee-nav-position';
 let navDragState = null;
-let navLocked = false;
+let navLocked = true; // locked by default; corrected by the saved preference once loadKey() resolves
 
 // Pauses decorative infinite animations (via the .is-scrolling class, see CSS) for the
 // duration of an active scroll gesture, so the main thread isn't repainting glow/shimmer
@@ -6713,7 +6889,9 @@ function initNavDrag() {
   if (!nav || !handle) return;
 
   loadKey(NAV_POS_KEY).then(saved => {
-    navLocked = !!(saved && saved.locked);
+    // Locked by default until the user explicitly unlocks it from Settings — once they
+    // do, their choice (locked or unlocked) is what gets remembered from then on.
+    navLocked = saved ? !!saved.locked : true;
     if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
       applyNavPosition(clampNavX(saved.x, nav), clampNavY(saved.y, nav));
     }
@@ -6796,6 +6974,7 @@ function updateNavLockUI() {
   if (btn) {
     btn.innerHTML = navLocked ? '🔒 Position: Locked' : '🔓 Position: Unlocked';
     btn.classList.toggle('util-btn-danger', navLocked);
+    btn.classList.toggle('util-btn-cyan', !navLocked);
   }
   if (handle) handle.classList.toggle('locked', navLocked);
 }
@@ -6805,7 +6984,7 @@ function resetNavPosition(e) {
   const nav = document.getElementById('bottom-nav');
   nav.classList.remove('nav-repositioned');
   nav.style.left = ''; nav.style.top = '';
-  navLocked = false;
+  navLocked = true; // matches the locked-by-default state a fresh load would show
   updateNavLockUI();
   try { localDB.set(NAV_POS_KEY, JSON.stringify(null), false); } catch (err) {}
   SFX.play('click');
@@ -10423,15 +10602,15 @@ async function checkCoachingReminders() {
   const now = new Date();
   const today = dateStr(0);
 
-  // Evening nudge (8pm+) for today's pending homework
-  if (now.getHours() >= 20) {
+  // Nudge for today's pending homework once the student's chosen reminder time has passed
+  if (now.getHours() * 60 + now.getMinutes() >= notifReminderMinutes) {
     let lastHwNotified = null;
     try { lastHwNotified = await loadKey('jee-coaching-hw-last-notified'); } catch (e) { /* ignore */ }
     if (lastHwNotified !== today) {
       const pendingHw = coachingLog.filter(e => e.date === today && e.homework && !e.homeworkDone);
       if (pendingHw.length) {
         try {
-          new Notification('📘 Homework pending', {
+          await showAppNotification('📘 Homework pending', {
             body: `Still to finish: ${pendingHw.map(e => e.homework).slice(0, 2).join(' | ')}`,
             icon: 'icon-192.png', tag: 'jee-coaching-hw'
           });
@@ -10441,14 +10620,16 @@ async function checkCoachingReminders() {
     }
   }
 
-  // Revision nudge for anything taught 1+ day ago and not yet revised
+  // Revision nudge for anything taught 1+ day ago and not yet revised, once the
+  // student's chosen reminder time has passed
+  if (now.getHours() * 60 + now.getMinutes() < notifReminderMinutes) return;
   let lastRevNotified = null;
   try { lastRevNotified = await loadKey('jee-coaching-rev-last-notified'); } catch (e) { /* ignore */ }
   if (lastRevNotified !== today) {
     const dueForRevision = coachingLog.filter(e => e.topics && !e.revised && e.date && e.date !== today && daysBetween(e.date, today) >= 1);
     if (dueForRevision.length) {
       try {
-        new Notification('🔁 Revise today\'s pending topics', {
+        await showAppNotification('🔁 Revise today\'s pending topics', {
           body: `Not yet revised: ${dueForRevision.slice(0, 3).map(e => e.topics).join(', ')}`,
           icon: 'icon-192.png', tag: 'jee-coaching-revision'
         });
