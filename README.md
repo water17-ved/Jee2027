@@ -12,8 +12,9 @@ leaderboard. Installable as a PWA (works offline once loaded).
 | `manifest.json` | Full PWA manifest — see "Manifest / PWABuilder score" below. |
 | `sw.js` | Service worker — caches the app shell so it works offline once installed. |
 | `icon-192.png` / `icon-512.png` | App icon, generated from the logo you provided (each has an `"any"` and a `"maskable"` entry in the manifest). |
-| `screenshots/` | 3 real screenshots of the running app (2 phone-size, 1 wide/tablet-size), referenced by the manifest's `screenshots` field. |
 | `README.md` | This file. |
+
+**Note:** the `screenshots/` folder mentioned in earlier notes isn't in this bundle, so the manifest's `screenshots` field and the service worker's cache list were both trimmed to only reference files that actually exist — otherwise the service worker's `cache.addAll()` would fail outright (it aborts entirely if any single file 404s) and offline install would break. Add real screenshots later and re-add both references if you want the PWABuilder screenshot credit.
 
 ## Running it
 
@@ -58,18 +59,18 @@ report card checks for:
 
 - **Required:** `name`, `short_name`, `icons` (incl. a real 512×512), `start_url`.
 - **Recommended:** `description`, `display`, `background_color`, `theme_color`,
-  `orientation`, `screenshots` (real ones — see below), a maskable icon,
-  `categories`, `shortcuts`.
+  `orientation`, a maskable icon, `categories`, `shortcuts`.
 - **Optional / extra credit:** `id`, `scope`, `lang`, `dir`, `display_override`,
   `prefer_related_applications` + `related_applications`, `launch_handler`.
 
 Two things worth knowing:
 
-1. **Screenshots are real, not placeholders.** I rendered the actual app (phone
-   size ×2, tablet/wide size ×1) and saved them into `screenshots/`. If you
-   redesign a tab significantly, swap in fresh ones — PWABuilder checks that
-   the files exist and match their declared `sizes`, not that they're
-   necessarily current.
+1. **`screenshots` was removed from this manifest.** PWABuilder recommends it,
+   but no screenshot images were included in this bundle, and pointing the
+   manifest at files that don't exist just leaves broken references. Render
+   the app (phone size ×2, tablet/wide size ×1), save them into a
+   `screenshots/` folder, and re-add the `screenshots` array (and the matching
+   paths in `sw.js`'s `APP_SHELL`) to pick up that PWABuilder credit.
 2. **`iarc_rating_id` was intentionally left out.** That field has to be a real
    ID issued by the IARC after you fill out their age-rating questionnaire
    (free, ~5 min, at https://www.globalratings.com) — a made-up value would

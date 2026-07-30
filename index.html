@@ -782,6 +782,20 @@
     font-family: var(--font-body);
     font-weight: var(--font-body-weight);
     line-height: 1.55;
+    /* Solid, cheap fallback paint — the actual decorative gradient layer lives on
+       body.mode-freefire::before (fixed, off the compositor's scroll-repaint path)
+       instead of here, so scrolling never has to repaint this background. */
+    background: var(--bg-color);
+    color: var(--text-main);
+    margin: 0;
+    padding: 20px;
+  }
+  /* Default (Free Fire) skin's decorative background, rendered on a fixed pseudo-element
+     instead of `background-attachment: fixed` on body — a fixed element composites on its
+     own GPU layer and never needs repainting while the page scrolls, which is what actually
+     caused the scroll jank. Fortnite / CoD / Shadow Fight already use this same pattern. */
+  body.mode-freefire::before {
+    content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
     background:
       repeating-linear-gradient(0deg, rgba(255,106,0,0.03) 0px, rgba(255,106,0,0.03) 1px, transparent 1px, transparent 3px),
       radial-gradient(circle at 12% 0%, rgba(34,211,238,0.10) 0%, transparent 40%),
@@ -789,10 +803,6 @@
       radial-gradient(circle at 50% 90%, rgba(57,255,136,0.08) 0%, transparent 45%),
       radial-gradient(circle at 15% 0%, var(--bg-glow) 0%, transparent 45%),
       var(--bg-color);
-    background-attachment: fixed;
-    color: var(--text-main);
-    margin: 0;
-    padding: 20px;
   }
   .container { max-width: 1000px; margin: 0 auto; }
   header {
@@ -1400,6 +1410,48 @@
   .report-modal-actions { display: flex; align-items: center; gap: 8px; }
   .report-iframe { flex: 1; width: 100%; border: none; background: #fff; }
 
+  /* Weekly Recap Card modal */
+  .recap-modal-overlay {
+    position: fixed; inset: 0; background: rgba(3,3,9,0.75); backdrop-filter: blur(2px);
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease; z-index: 240;
+  }
+  .recap-modal-overlay.open { opacity: 1; pointer-events: auto; }
+  .recap-modal {
+    position: fixed; top: 3vh; left: 50%; transform: translateX(-50%) scale(0.97);
+    width: min(460px, 94vw); max-height: 94vh;
+    background: #14101a; border: 1px solid var(--border); border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 250; display: flex; flex-direction: column; overflow: hidden;
+  }
+  .recap-modal.open { opacity: 1; pointer-events: auto; transform: translateX(-50%) scale(1); }
+  .recap-modal-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 12px 16px; background: linear-gradient(135deg, var(--panel-bg), #060a12);
+    border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .recap-modal-header h2 { margin: 0; font-family: var(--font-display); font-size: 0.9rem; color: var(--gold-bright); }
+  .recap-modal-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .recap-modal-body canvas { width: 100%; max-width: 400px; border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,0.5); }
+  .recap-modal-actions { display: flex; gap: 10px; width: 100%; }
+  .recap-btn {
+    flex: 1; padding: 11px; border-radius: 8px; border: none; cursor: pointer;
+    font-family: var(--font-accent); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.3px;
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+  .recap-btn:active { transform: scale(0.97); }
+  .recap-btn-primary { background: linear-gradient(135deg, var(--gold), var(--gold-bright)); color: #14101a; }
+  .recap-btn-primary:hover { filter: brightness(1.08); }
+  .recap-btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+  .recap-generate-btn {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 10px 16px;
+    border-radius: 8px; border: 1px solid var(--border); background: var(--panel-bg);
+    color: var(--gold-bright); font-family: var(--font-accent); font-weight: 700; font-size: 0.82rem;
+    cursor: pointer; transition: filter 0.15s ease, transform 0.15s ease;
+  }
+  .recap-generate-btn:hover { filter: brightness(1.15); }
+  .recap-generate-btn:active { transform: scale(0.97); }
+
   /* Bottom navigation bar — 4 main sections, always reachable, no scrolling needed */
   .bottom-nav {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 210;
@@ -1407,6 +1459,7 @@
     background: linear-gradient(180deg, var(--panel-bg), #04060c);
     border-top: 1px solid var(--border); box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-top: 14px;
   }
   .bottom-nav-btn {
     flex: 1; background: transparent; border: none; color: var(--text-muted);
@@ -1420,6 +1473,134 @@
   .bottom-nav-btn:active { background: rgba(255,255,255,0.05); }
   .bottom-nav-btn.active { color: var(--gold-bright); }
   .bottom-nav-btn.active .bn-icon { filter: drop-shadow(0 0 6px rgba(255,166,0,0.5)); }
+
+  /* ---------- Nav icon SVGs ---------- */
+  .bn-icon svg { width: 22px; height: 22px; display: block; overflow: visible; }
+  .bn-icon svg path, .bn-icon svg line, .bn-icon svg circle, .bn-icon svg rect {
+    stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    transition: stroke 0.2s ease;
+  }
+
+  /* Practice — sword: gentle idle sway, slash swipe on activation */
+  .bn-icon .icon-sword { transform-origin: 50% 85%; animation: swordIdle 3.4s ease-in-out infinite; }
+  @keyframes swordIdle { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+  .bottom-nav-btn[data-cat="practice"].bn-pop .icon-sword { animation: swordSlash 0.45s cubic-bezier(.2,.8,.3,1); }
+  @keyframes swordSlash {
+    0%   { transform: rotate(-50deg) scale(0.9); opacity: 0.4; }
+    55%  { transform: rotate(20deg) scale(1.08); opacity: 1; }
+    100% { transform: rotate(-5deg) scale(1); opacity: 1; }
+  }
+  .bn-icon .icon-sword .slash-trail { opacity: 0; }
+  .bottom-nav-btn[data-cat="practice"].bn-pop .icon-sword .slash-trail {
+    animation: slashTrail 0.45s ease-out;
+  }
+  @keyframes slashTrail { 0% { opacity: 0; } 30% { opacity: 0.9; } 100% { opacity: 0; } }
+
+  /* Progress — bar chart: bars grow up into place on activation */
+  .icon-chart .bar { transform-box: fill-box; transform-origin: bottom; transform: scaleY(1); }
+  .bottom-nav-btn[data-cat="progress"].bn-pop .icon-chart .bar1 { animation: barGrow 0.5s ease-out; }
+  .bottom-nav-btn[data-cat="progress"].bn-pop .icon-chart .bar2 { animation: barGrow 0.5s ease-out 0.08s; }
+  .bottom-nav-btn[data-cat="progress"].bn-pop .icon-chart .bar3 { animation: barGrow 0.5s ease-out 0.16s; }
+  @keyframes barGrow { 0% { transform: scaleY(0); opacity: 0.3; } 100% { transform: scaleY(1); opacity: 1; } }
+  .icon-chart .trend { stroke-dasharray: 30; stroke-dashoffset: 0; }
+  .bottom-nav-btn.active[data-cat="progress"] .icon-chart .trend { animation: trendIn 0.6s ease-out; }
+  @keyframes trendIn { 0% { stroke-dashoffset: 30; } 100% { stroke-dashoffset: 0; } }
+
+  /* Social — two people: subtle idle bob, pop + head nod on tap */
+  .icon-users { transform-box: fill-box; transform-origin: center; animation: usersBob 4s ease-in-out infinite; }
+  @keyframes usersBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-1px); } }
+  .bottom-nav-btn[data-cat="social"].bn-pop .icon-users { animation: usersPulse 0.45s ease-out; }
+  @keyframes usersPulse { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+  .icon-users .user-head, .icon-users .user2-head { transform-box: fill-box; transform-origin: center; }
+  .bottom-nav-btn[data-cat="social"].bn-pop .icon-users .user2-head { animation: nod 0.45s ease-out 0.05s; }
+  @keyframes nod { 0%,100% { transform: rotate(0); } 50% { transform: rotate(8deg); } }
+
+  /* Settings — gear: rotates smoothly while active, still when idle */
+  .icon-gear { transform-box: fill-box; transform-origin: center; }
+  .bottom-nav-btn.active[data-cat="settings"] .icon-gear { animation: gearSpin 4s linear infinite; }
+  .bottom-nav-btn[data-cat="settings"].bn-pop .icon-gear { animation: gearSpinTap 0.5s ease-out; }
+  @keyframes gearSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  @keyframes gearSpinTap { 0% { transform: rotate(0deg) scale(1); } 60% { transform: rotate(200deg) scale(1.12); } 100% { transform: rotate(360deg) scale(1); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bn-icon .icon-sword, .icon-users, .icon-gear,
+    .bottom-nav-btn.bn-pop .icon-sword, .bottom-nav-btn.bn-pop .icon-chart .bar,
+    .bottom-nav-btn.bn-pop .icon-users, .bottom-nav-btn.bn-pop .icon-users .user2-head, .bottom-nav-btn.bn-pop .icon-gear {
+      animation: none !important;
+    }
+  }
+
+  /* Drag handle — sits INSIDE the top edge of the bottom-nav itself (not sticking out
+     above it), so it moves and stays reachable together with the whole bar. Grab the
+     grip dots to drag. Lock/reset controls live in Settings → Customization, not here. */
+  .nav-drag-handle {
+    position: absolute; top: 0; left: auto; right: 0; width: 25%; height: 14px; z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
+    border-radius: inherit; border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+    cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+  }
+  .nav-drag-handle:active { cursor: grabbing; }
+  .nav-drag-handle.locked { cursor: default; }
+  .nav-drag-grip { color: var(--text-muted); font-size: 0.6rem; letter-spacing: 1px; line-height: 1; }
+  .bottom-nav.nav-dragging { transition: none !important; opacity: 0.88; }
+  .bottom-nav.nav-repositioned { left: auto; right: auto; bottom: auto; transform: none; }
+
+  /* ---- Desktop sidebar — replaces bottom-nav + chip row at wide widths (see the
+     @media (min-width: 1150px) block further down, which is what actually shows it) ---- */
+  .sidebar-desktop {
+    display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 258px; z-index: 150;
+    flex-direction: column; overflow-y: auto;
+    background: linear-gradient(180deg, var(--panel-bg), #08050d);
+    border-right: 1px solid var(--border);
+    padding: 22px 14px 20px;
+  }
+  .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 0 8px; margin-bottom: 22px; }
+  .sidebar-brand img { width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0; }
+  .sidebar-brand-text { font-family: var(--font-display); font-size: 0.86rem; line-height: 1.25; color: var(--text-main); }
+  .sidebar-brand-text small { display: block; font-family: var(--font-accent); font-weight: 600; color: var(--text-muted); font-size: 0.72rem; letter-spacing: 0.08em; }
+  .sidebar-group { margin-bottom: 18px; }
+  .sidebar-group-label {
+    font-family: var(--font-accent); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    font-size: 0.68rem; color: var(--text-muted); padding: 0 10px; margin-bottom: 6px;
+  }
+  .sidebar-link {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    background: transparent; border: none; border-radius: 9px; cursor: pointer;
+    color: var(--text-muted); font-family: var(--font-body); font-size: 0.86rem;
+    padding: 9px 10px; margin-bottom: 2px; transition: background 0.15s ease, color 0.15s ease;
+    position: relative;
+  }
+  .sidebar-link:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+  .sidebar-link.active {
+    background: linear-gradient(90deg, rgba(255,106,0,0.16), rgba(255,106,0,0.03));
+    color: var(--gold-bright); font-weight: 600;
+  }
+  .sidebar-link.active::before {
+    content: ''; position: absolute; left: -14px; top: 8px; bottom: 8px; width: 3px;
+    border-radius: 0 3px 3px 0; background: var(--gold-bright); box-shadow: 0 0 8px rgba(255,207,61,0.6);
+  }
+  .sidebar-link .sl-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+  .sidebar-link .sl-qcount {
+    margin-left: auto; background: rgba(255,255,255,0.08); color: var(--text-muted);
+    border-radius: 999px; font-family: var(--font-mono); font-size: 0.66rem; padding: 1px 7px;
+  }
+  .sidebar-link.active .sl-qcount { background: rgba(255,207,61,0.18); color: var(--gold-bright); }
+
+  /* Desktop layout: sidebar takes the left rail, bottom-nav + chip row (mobile-only
+     navigation) step aside, and the content column gets real breathing room. */
+  @media (min-width: 1150px) {
+    .sidebar-desktop { display: flex; }
+    .bottom-nav, .chip-row-wrap { display: none !important; }
+    body { padding-left: 258px !important; padding-bottom: 32px !important; }
+    .container { max-width: 1360px; padding: 0 40px; }
+    #physics-list, #chemistry-list, #maths-list,
+    #physics-adv-list, #chemistry-adv-list, #maths-adv-list {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+    .checklist { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+    .achievements-grid, .league-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  }
 
   /* Horizontal scrollable chip row — sub-tabs within whichever bottom-nav category is active */
   .chip-row-wrap { position: sticky; top: 0; z-index: 50; margin: 0 -20px 16px; padding: 0 20px; background: var(--bg-color); }
@@ -1488,6 +1669,10 @@
     border: 1px solid var(--locked); border-radius: 12px;
     padding: 18px; margin-bottom: 16px; position: relative;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    /* Skip style/layout/paint for cards scrolled off-screen — the intrinsic-size guess
+       keeps scrollbar height stable before a card has ever been measured. */
+    content-visibility: auto;
+    contain-intrinsic-size: 0 230px;
   }
   .chapter-card.tier-bronze { border-color: var(--bronze); }
   .chapter-card.tier-silver { border-color: var(--silver); }
@@ -1696,6 +1881,63 @@
   }
   .undo-toast button:hover { background: rgba(255,106,0,0.12); }
 
+  /* League Promotion Cutscene — full-screen celebration shown the moment the
+     player's weekly XP crosses into a higher league tier (Bronze -> Silver, etc.) */
+  .league-cutscene {
+    position: fixed; inset: 0; z-index: 2000;
+    display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 45%, rgba(42,15,58,0.96) 0%, rgba(4,3,8,0.98) 70%);
+    opacity: 0; pointer-events: none; transition: opacity 0.35s ease;
+    backdrop-filter: blur(2px);
+  }
+  .league-cutscene.show { opacity: 1; pointer-events: auto; }
+  .league-cutscene-rays {
+    position: absolute; inset: -20%; z-index: 0;
+    background: repeating-conic-gradient(from 0deg, rgba(255,255,255,0.05) 0deg 8deg, transparent 8deg 16deg);
+    opacity: 0; animation: leagueRaysSpin 12s linear infinite;
+  }
+  .league-cutscene.show .league-cutscene-rays { opacity: 0.5; }
+  @keyframes leagueRaysSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .league-cutscene-content {
+    position: relative; z-index: 1; text-align: center; padding: 32px;
+    transform: scale(0.7); opacity: 0;
+  }
+  .league-cutscene.show .league-cutscene-content { animation: leagueCutsceneIn 0.6s cubic-bezier(.2,1.6,.4,1) forwards; }
+  @keyframes leagueCutsceneIn { 0% { transform: scale(0.5) translateY(30px); opacity: 0; } 60% { transform: scale(1.08) translateY(0); opacity: 1; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+  .league-cutscene-eyebrow {
+    font-family: var(--font-accent); font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+    font-size: 0.85rem; color: var(--gold-bright); margin-bottom: 10px; opacity: 0.9;
+  }
+  .league-cutscene-icon {
+    width: 128px; height: 128px; margin: 0 auto 14px auto; filter: drop-shadow(0 0 24px rgba(255,183,0,0.55));
+    animation: leagueCutsceneIconPulse 1.6s ease-in-out infinite;
+  }
+  .league-cutscene-icon svg { width: 100%; height: 100%; }
+  @keyframes leagueCutsceneIconPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  .league-cutscene-title {
+    font-family: var(--font-display); font-weight: 900; font-size: 2rem; letter-spacing: 1px;
+    background: linear-gradient(90deg, var(--gold-bright), var(--gold), var(--gold-bright));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .league-cutscene-sub { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 22px; }
+  .league-cutscene-sub b { color: var(--gold-bright); }
+  .league-cutscene-dismiss {
+    font-family: var(--font-accent); font-weight: 700; font-size: 0.85rem;
+    background: linear-gradient(135deg, var(--gold-bright), var(--gold)); color: #03040a;
+    border: none; border-radius: 999px; padding: 11px 26px; cursor: pointer;
+    box-shadow: 0 8px 22px rgba(255,106,0,0.4);
+  }
+  .league-cutscene-particle {
+    position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold-bright); opacity: 0; pointer-events: none;
+  }
+  .league-cutscene.show .league-cutscene-particle { animation: leagueParticleBurst 1s ease-out forwards; }
+  @keyframes leagueParticleBurst {
+    0% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--pangle, 0deg)) translateX(0) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--pangle, 0deg)) translateX(160px) scale(0.4); }
+  }
+
   /* Achievements */
   .achievements-summary { text-align: center; margin-bottom: 20px; color: var(--text-muted); font-size: 0.9rem; }
   .achievements-summary span { color: var(--gold-bright); font-weight: 700; }
@@ -1780,31 +2022,83 @@
   .league-card .lg-points { font-size: 0.85rem; color: var(--gold-bright); font-weight: 700; margin-bottom: 10px; }
   .league-card .lg-achieved { font-size: 0.72rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
 
-  /* Custom league badge icon (shield + crown for Legend) — no emoji, tinted per tier */
+  /* Custom league badge icon (shield + crown for Grandmaster) — no emoji, tinted per tier */
   .league-icon-svg { width: 22px; height: 22px; overflow: visible; display: inline-block; vertical-align: middle; }
   .lg-icon .league-icon-svg { width: 34px; height: 34px; margin: 0 auto; }
   .league-icon-shield { stroke-width: 1.5; fill: rgba(255,255,255,0.05); stroke: var(--text-muted); }
   .league-icon-crown { stroke: none; }
-  .league-icon-svg.tier-beginner .league-icon-shield { fill: color-mix(in srgb, var(--phys) 22%, transparent); stroke: var(--phys); }
   .league-icon-svg.tier-bronze .league-icon-shield { fill: color-mix(in srgb, var(--bronze) 30%, transparent); stroke: var(--bronze); }
   .league-icon-svg.tier-silver .league-icon-shield { fill: color-mix(in srgb, var(--silver) 30%, transparent); stroke: var(--silver); }
   .league-icon-svg.tier-gold .league-icon-shield { fill: color-mix(in srgb, var(--gold-bright) 32%, transparent); stroke: var(--gold-bright); }
+  .league-icon-svg.tier-platinum .league-icon-shield { fill: color-mix(in srgb, var(--chem) 30%, transparent); stroke: var(--chem); }
   .league-icon-svg.tier-diamond .league-icon-shield { fill: color-mix(in srgb, var(--phys) 32%, transparent); stroke: var(--phys); }
-  .league-icon-svg.tier-legend .league-icon-shield { fill: color-mix(in srgb, var(--lb) 32%, transparent); stroke: var(--lb); }
-  .league-icon-svg.tier-legend .league-icon-crown { fill: var(--lb); }
+  .league-icon-svg.tier-grandmaster .league-icon-shield { fill: color-mix(in srgb, var(--lb) 32%, transparent); stroke: var(--lb); }
+  .league-icon-svg.tier-grandmaster .league-icon-crown { fill: var(--lb); }
+
+  /* Shadow Fight mode: sword icon instead of shield — tinted blade + guard/grip + division gems */
+  .sword-blade { stroke: rgba(0,0,0,0.35); stroke-width: 0.4; }
+  .sword-gem { fill: #fff; }
+  .sword-guard { fill: rgba(0,0,0,0.55); stroke: rgba(255,255,255,0.15); stroke-width: 0.4; }
+  .sword-grip { fill: rgba(0,0,0,0.65); }
+  .sword-pommel { fill: rgba(0,0,0,0.65); }
+  .league-icon-svg.tier-bronze .sword-blade { fill: var(--bronze); }
+  .league-icon-svg.tier-silver .sword-blade { fill: #e07b1f; }
+  .league-icon-svg.tier-gold .sword-blade { fill: var(--chem); }
+  .league-icon-svg.tier-platinum .sword-blade { fill: #2a7bff; }
+  .league-icon-svg.tier-diamond .sword-blade { fill: var(--maths); }
+  .league-icon-svg.tier-grandmaster .sword-blade { fill: #141018; stroke: var(--danger); stroke-width: 0.6; }
+  .league-icon-svg.tier-grandmaster .sword-gem { fill: var(--danger); }
+  .league-icon-svg.tier-grandmaster .sword-pommel { fill: var(--danger); }
 
   /* League icons animate per tier — same tier system as the star rank badge.
      The track's node-icon keeps its own border/scale styling for reached/current,
      so the glyph is wrapped in an inner span that carries the animation instead. */
   .node-icon-glyph, .lg-icon { display: inline-block; }
-  .node-icon-glyph.tier-beginner, .lg-icon.tier-beginner { animation: leagueFloat 2.6s ease-in-out infinite; }
   .node-icon-glyph.tier-bronze, .lg-icon.tier-bronze { animation: leagueBob 2.4s ease-in-out infinite; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--bronze) 70%, transparent)); }
   .node-icon-glyph.tier-silver, .lg-icon.tier-silver { animation: leagueSwing 2.2s ease-in-out infinite; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--silver) 70%, transparent)); }
   .node-icon-glyph.tier-gold, .lg-icon.tier-gold { animation: leagueGoldPulse 1.7s ease-in-out infinite; }
+  .node-icon-glyph.tier-platinum, .lg-icon.tier-platinum { animation: leagueSwing 2s ease-in-out infinite; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--chem) 70%, transparent)); }
   .node-icon-glyph.tier-diamond, .lg-icon.tier-diamond { animation: leagueDiamondGleam 2.2s ease-in-out infinite; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--phys) 75%, transparent)); }
-  .node-icon-glyph.tier-legend, .lg-icon.tier-legend { animation: leagueCrownFloat 2s ease-in-out infinite; }
+  .node-icon-glyph.tier-grandmaster, .lg-icon.tier-grandmaster { animation: leagueCrownFloat 2s ease-in-out infinite; }
   /* Not-yet-reached track nodes stay still and dim — only earned tiers feel "alive" */
   .league-node:not(.reached) .node-icon-glyph { animation: none !important; filter: none !important; opacity: 0.5; }
+
+  /* Division chip (Free Fire-style "II"/"III" badge) on the currently-active track node */
+  .node-icon { position: relative; }
+  .node-div-chip {
+    position: absolute; bottom: -4px; right: -6px; background: var(--panel-2, #170f22);
+    border: 1px solid var(--gold-bright); color: var(--gold-bright); border-radius: 6px;
+    font-family: var(--font-mono); font-size: 0.58rem; font-weight: 700; padding: 0px 3px; line-height: 1.3;
+  }
+  /* Division pips on each league card — filled pips show progress toward promotion */
+  .lg-divisions { display: flex; justify-content: center; gap: 4px; margin: 6px 0 8px; }
+  .lg-div-pip {
+    font-family: var(--font-mono); font-size: 0.62rem; border: 1px solid var(--border);
+    color: var(--text-muted); border-radius: 5px; padding: 1px 5px;
+  }
+  .lg-div-pip.on { border-color: var(--gold-bright); color: var(--gold-bright); background: rgba(255,183,0,0.12); }
+
+  /* "My League" screen — only the current league is shown unlocked; every other
+     league renders as a locked silhouette so the player's focus stays on where
+     they actually are, with the full collection still one tap away. */
+  .league-view-toggle { display: flex; gap: 8px; margin: 14px 0 4px; }
+  .league-view-toggle button {
+    flex: 1; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--panel-bg); color: var(--text-muted); font-family: var(--font-accent);
+    font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
+  }
+  .league-view-toggle button.active {
+    color: var(--panel-bg); background: var(--gold-bright); border-color: var(--gold-bright);
+  }
+  .league-card.locked { filter: grayscale(0.85); opacity: 0.55; }
+  .league-card.locked .lg-icon { opacity: 0.5; }
+  .league-card .lg-lock-badge {
+    position: absolute; top: 10px; right: 10px; font-size: 0.9rem; opacity: 0.8;
+  }
+  .league-card .lg-locked-note {
+    font-size: 0.72rem; color: var(--text-muted); border-top: 1px solid var(--border);
+    padding-top: 8px; margin-top: 4px;
+  }
   @keyframes leagueFloat {
     0%, 100% { transform: translateY(0); opacity: 0.85; }
     50% { transform: translateY(-2px); opacity: 1; }
@@ -1833,6 +2127,12 @@
   @media (prefers-reduced-motion: reduce) {
     .node-icon-glyph, .lg-icon { animation: none !important; }
   }
+  /* While actively scrolling, pause the page's decorative infinite animations (glow
+     pulses, shimmer sweeps, floating icons — most of which animate filter/box-shadow
+     and force a repaint every frame). This is what actually caused scroll jank: those
+     repaints were competing with the browser for scroll frames. Animations resume on
+     their own ~150ms after the scroll gesture ends, so nothing looks static for long. */
+  body.is-scrolling * { animation-play-state: paused !important; }
 
   /* Coaching Log tab */
   .coaching-card {
@@ -1903,10 +2203,10 @@
   .subject-picker-active { background: color-mix(in srgb, currentColor 16%, transparent) !important; box-shadow: inset 0 0 0 1px currentColor, 0 0 10px color-mix(in srgb, currentColor 45%, transparent) !important; }
 
   .analysis-section-block { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
-  .analysis-weight-bars { max-height: 480px; overflow-y: auto; padding-right: 4px; }
+  .analysis-weight-bars { max-height: 480px; overflow-y: auto; padding-right: 4px; -webkit-overflow-scrolling: touch; }
 
   /* Chapter cards — replaces a wide table that overflowed on phone screens */
-  .analysis-chapter-list { display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto; overflow-x: hidden; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--gold) transparent; }
+  .analysis-chapter-list { display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto; overflow-x: hidden; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--gold) transparent; -webkit-overflow-scrolling: touch; }
   .analysis-chapter-list::-webkit-scrollbar { width: 6px; }
   .analysis-chapter-list::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
   .analysis-chapter-list::-webkit-scrollbar-track { background: transparent; }
@@ -2448,6 +2748,21 @@
 </div>
 
 <div class="report-modal-overlay" id="report-modal-overlay" onclick="closeReportModal()"></div>
+
+<div class="recap-modal-overlay" id="recap-modal-overlay" onclick="closeRecapModal()"></div>
+<div class="recap-modal" id="recap-modal">
+  <div class="recap-modal-header">
+    <h2>🖼 Weekly Recap Card</h2>
+    <button class="icon-btn" onclick="closeRecapModal()" aria-label="Close" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;">✕</button>
+  </div>
+  <div class="recap-modal-body">
+    <canvas id="recap-canvas" width="800" height="1000"></canvas>
+    <div class="recap-modal-actions">
+      <button class="recap-btn recap-btn-secondary" onclick="closeRecapModal()">Close</button>
+      <button class="recap-btn recap-btn-primary" onclick="downloadRecapCard()">⬇ Download Image</button>
+    </div>
+  </div>
+</div>
 <div class="report-modal" id="report-modal">
   <div class="report-modal-header">
     <h2>🖨 Weekly Report</h2>
@@ -2469,6 +2784,14 @@
   <div class="onboarding-content" id="onboarding-step-content"></div>
   <div class="onboarding-tap-hint" id="onboarding-tap-hint">Tap anywhere to continue</div>
 </div>
+
+<nav class="sidebar-desktop" id="sidebar-desktop" aria-label="Desktop navigation">
+  <div class="sidebar-brand">
+    <img src="icon-192.png" alt="" onerror="this.style.display='none'">
+    <div class="sidebar-brand-text">JEE Battle Royale<small>TRACKER</small></div>
+  </div>
+  <div id="sidebar-groups"></div>
+</nav>
 
 <div class="container">
   <header id="main-header">
@@ -2553,6 +2876,17 @@
   <div id="undoToast" class="undo-toast">
     <span id="undoToastMsg"></span>
     <button onclick="performUndo()">Undo</button>
+  </div>
+
+  <div class="league-cutscene" id="league-cutscene" onclick="hideLeagueCutscene()">
+    <div class="league-cutscene-rays"></div>
+    <div class="league-cutscene-content">
+      <div class="league-cutscene-eyebrow">League Promotion</div>
+      <div class="league-cutscene-icon" id="league-cutscene-icon"></div>
+      <div class="league-cutscene-title" id="league-cutscene-title"></div>
+      <div class="league-cutscene-sub" id="league-cutscene-sub"></div>
+      <button class="league-cutscene-dismiss" onclick="event.stopPropagation(); hideLeagueCutscene();">Nice!</button>
+    </div>
   </div>
 
   <div class="save-status" id="saveStatus"></div>
@@ -2998,6 +3332,10 @@
     </div>
     <div class="levelup-guide">
       <h2>🎖 League Collection</h2>
+      <div class="league-view-toggle">
+        <button id="league-view-btn-current" class="active" onclick="setLeagueViewMode('current')">🔒 My League</button>
+        <button id="league-view-btn-all" onclick="setLeagueViewMode('all')">🎖 All Leagues</button>
+      </div>
       <div class="league-grid" id="league-grid"></div>
     </div>
   </div>
@@ -3114,6 +3452,7 @@
       <h2>📆 Weekly Progress</h2>
       <p style="font-size:0.78rem; margin: -6px 0 12px 0; color: var(--text-muted);">Every log keeps its last 7 days on its own page. Once an entry turns a week old it moves here — nothing is deleted, it's just archived so your active logs stay short.</p>
       <div id="weekly-summary-grid" class="daily-summary"></div>
+      <button class="recap-generate-btn" onclick="openWeeklyRecap()">🖼 Generate Weekly Recap Card</button>
     </div>
 
     <div class="log-section">
@@ -3170,6 +3509,15 @@
     <div class="settings-group">
       <div class="settings-group-label">🎨 Customization</div>
       <div class="settings-group-box">
+        <div class="log-section">
+          <h2>🧭 Navigation Bar Position</h2>
+          <p style="font-size:0.83rem; color: var(--text-muted); margin-bottom:16px;">On phones, the bottom navigation bar can be dragged anywhere on screen by its top grip (⠿⠿) — handy if it ever overlaps content on an unusual screen size or in landscape. Lock it once you've found a good spot so it can't be moved by accident, or reset it back to the default bottom-center position.</p>
+          <div class="util-bar">
+            <button class="util-btn util-btn-cyan" id="settings-nav-lock-btn" onclick="toggleNavLock(event)">🔓 Position: Unlocked</button>
+            <button class="util-btn" onclick="resetNavPosition(event)">⟲ Reset Position</button>
+          </div>
+        </div>
+
         <div class="log-section">
           <h2>🎮 Game Mode</h2>
           <p style="font-size:0.83rem; color: var(--text-muted); margin-bottom:16px;">Switch the whole interface's look between skins, any time you want. Your progress, chapters, and data stay exactly the same either way.</p>
@@ -3270,6 +3618,11 @@
       <div class="manual-block">
         <h3>📲 Home Screen Shortcuts</h3>
         <p>Once installed (Add to Home Screen / APK), long-press the app icon for quick actions: <strong>Mark Present</strong>, <strong>Daily Qs</strong>, <strong>Battle Log</strong>, and <strong>Data & Backup</strong> — each jumps straight to that screen (or logs your present day) without opening the app fully first.</p>
+      </div>
+
+      <div class="manual-block">
+        <h3>🧭 Moving the Navigation Bar</h3>
+        <p>On phones, grab the small dotted strip (⠿⠿) along the top edge of the bottom navigation bar and drag it anywhere on screen — handy if it ever ends up overlapping content on an unusual screen size or in landscape. Its position is remembered next time you open the app. Manage it anytime from <strong>Settings → 🎨 Customization → 🧭 Navigation Bar Position</strong>: lock it in place once you've found a good spot, or reset it back to the default.</p>
       </div>
 
       <div class="manual-block">
@@ -3481,17 +3834,47 @@
 </div>
 
 <nav class="bottom-nav" id="bottom-nav">
+  <div class="nav-drag-handle" id="nav-drag-handle" title="Drag to move this bar">
+    <span class="nav-drag-grip">⠿⠿</span>
+  </div>
   <button class="bottom-nav-btn" data-cat="practice" onclick="switchCategory('practice')">
-    <span class="bn-icon">⚔</span><span class="bn-label">Practice</span>
+    <span class="bn-icon">
+      <svg viewBox="0 0 24 24" class="icon-sword">
+        <line class="slash-trail" x1="3" y1="19" x2="17" y2="5" stroke-width="3" opacity="0.6"/>
+        <path d="M12 2 L13.4 5 L13.4 15 L10.6 15 L10.6 5 Z" fill="currentColor" stroke="none"/>
+        <line x1="6" y1="15.5" x2="18" y2="15.5" stroke-width="2"/>
+        <rect x="11" y="15.5" width="2" height="5" rx="1" fill="currentColor" stroke="none"/>
+        <circle cx="12" cy="21.4" r="1.3" fill="currentColor" stroke="none"/>
+      </svg>
+    </span><span class="bn-label">Practice</span>
   </button>
   <button class="bottom-nav-btn" data-cat="progress" onclick="switchCategory('progress')">
-    <span class="bn-icon">📈</span><span class="bn-label">Progress</span>
+    <span class="bn-icon">
+      <svg viewBox="0 0 24 24" class="icon-chart">
+        <rect class="bar bar1" x="4" y="13" width="4" height="7" rx="0.5"/>
+        <rect class="bar bar2" x="10" y="8" width="4" height="12" rx="0.5"/>
+        <rect class="bar bar3" x="16" y="4" width="4" height="16" rx="0.5"/>
+        <path class="trend" d="M4 12 L10 7 L16 3" stroke-width="1.6"/>
+      </svg>
+    </span><span class="bn-label">Progress</span>
   </button>
   <button class="bottom-nav-btn" data-cat="social" onclick="switchCategory('social')">
-    <span class="bn-icon">🌐</span><span class="bn-label">Social</span>
+    <span class="bn-icon">
+      <svg viewBox="0 0 24 24" class="icon-users">
+        <circle class="user-head" cx="9" cy="8" r="3.2"/>
+        <path class="user-body" d="M3.5 19.5v-1.2a4.5 4.5 0 0 1 4.5-4.5h2a4.5 4.5 0 0 1 4.5 4.5v1.2"/>
+        <path class="user2-head" d="M15.3 4.7a3.2 3.2 0 0 1 0 6.1"/>
+        <path class="user2-body" d="M16.5 13.8a4.5 4.5 0 0 1 4 4.5v1.2"/>
+      </svg>
+    </span><span class="bn-label">Social</span>
   </button>
   <button class="bottom-nav-btn" data-cat="settings" onclick="switchCategory('settings')">
-    <span class="bn-icon">⚙</span><span class="bn-label">Settings</span>
+    <span class="bn-icon">
+      <svg viewBox="0 0 24 24" class="icon-gear">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-width="1.6"/>
+      </svg>
+    </span><span class="bn-label">Settings</span>
   </button>
 </nav>
 
@@ -3734,8 +4117,13 @@ function buildTestLogForSync() {
     const totals = computeMockTotals(t);
     return {
       name: t.name || '', date: t.date || '', maxmarks: Number(t.maxmarks) || 0,
-      scored: Math.round(totals.scored),
+      questions: Number(t.questions) || 0,
+      topics: t.topics || [],
+      scored: Math.round(totals.scored), negmarks: Math.round(totals.negmarks),
       physics: Math.round(scores.phys), chemistry: Math.round(scores.chem), maths: Math.round(scores.maths),
+      phyAttempted: Number(t.phyAttempted) || 0, phyCorrect: Number(t.phyCorrect) || 0,
+      chemAttempted: Number(t.chemAttempted) || 0, chemCorrect: Number(t.chemCorrect) || 0,
+      mathsAttempted: Number(t.mathsAttempted) || 0, mathsCorrect: Number(t.mathsCorrect) || 0,
       note: t.note || ''
     };
   });
@@ -3749,11 +4137,48 @@ function buildQuestionLogForSync() {
   }));
 }
 
+// Chapter-wise tests (per-topic tests, not the big mock/major tests above).
+function buildChapterTestLogForSync() {
+  return chapterTests.slice(0, 150).map(t => ({
+    subject: t.subject || '', topic: t.topic || '', level: t.level || '',
+    questions: Number(t.questions) || 0, myscore: Number(t.myscore) || 0,
+    topperscore: Number(t.topperscore) || 0, date: t.date || '', note: t.note || ''
+  }));
+}
+
+// Fully user-defined custom tests.
+function buildCustomTestLogForSync() {
+  return customTests.slice(0, 150).map(t => ({
+    category: t.category || '', name: t.name || '', subject: t.subject || '',
+    date: t.date || '', questions: Number(t.questions) || 0,
+    scored: Number(t.scored) || 0, maxmarks: Number(t.maxmarks) || 0,
+    timeMin: t.timeMin || '', note: t.note || ''
+  }));
+}
+
+// Advanced Zone's own chapter-wise tests (separate dimension from the main tracker).
+function buildAdvChapterTestLogForSync() {
+  return advChapterTests.slice(0, 150).map(t => ({
+    subject: t.subject || '', topic: t.topic || '', level: t.level || '',
+    questions: Number(t.questions) || 0, myscore: Number(t.myscore) || 0,
+    topperscore: Number(t.topperscore) || 0, date: t.date || '', note: t.note || ''
+  }));
+}
+
+// Advanced Zone's own major/mock tests.
+function buildAdvMajorTestLogForSync() {
+  return advMajorTests.slice(0, 100).map(t => ({
+    name: t.name || '', date: t.date || '', questions: Number(t.questions) || 0,
+    maxmarks: Number(t.maxmarks) || 0, negmarks: Number(t.negmarks) || 0,
+    scored: Number(t.scored) || 0, note: t.note || ''
+  }));
+}
+
 function buildOwnStats() {
   const weeklyMap = (typeof computeWeeklyXpMap === 'function') ? computeWeeklyXpMap() : {};
   const currentWeekKey = (typeof getISOWeekKey === 'function') ? getISOWeekKey(dateStr(0)) : null;
   const weeklyXp = (currentWeekKey && weeklyMap[currentWeekKey]) || 0;
-  const league = (typeof tierForXp === 'function') ? tierForXp(weeklyXp) : { key: 'beginner', name: 'Beginner' };
+  const league = (typeof tierForXp === 'function') ? tierForXp(weeklyXp) : { key: 'bronze-IV', name: 'Bronze IV' };
   return {
     name: playerName || (currentUser && currentUser.displayName) || 'Player',
     standard: playerStandard || '',
@@ -3769,7 +4194,11 @@ function buildOwnStats() {
     leagueKey: league.key,
     leagueName: league.name,
     testLog: buildTestLogForSync(),
-    questionLog: buildQuestionLogForSync()
+    questionLog: buildQuestionLogForSync(),
+    chapterTestLog: buildChapterTestLogForSync(),
+    customTestLog: buildCustomTestLogForSync(),
+    advChapterTestLog: buildAdvChapterTestLogForSync(),
+    advMajorTestLog: buildAdvMajorTestLogForSync()
   };
 }
 
@@ -4246,6 +4675,7 @@ function applyGameMode(modeId) {
   }
 
   renderGameModeSwitch();
+  if (typeof renderLeague === 'function') renderLeague();
 }
 
 function selectGameMode(modeId) {
@@ -4934,6 +5364,7 @@ let chapterCompletionDates = {}; // chapterId -> 'YYYY-MM-DD' the FIRST time it 
 let chapter70Dates = {}; // chapterId -> 'YYYY-MM-DD' the FIRST time it hit 70% (drives study reminders below)
 let revisionCounts = {}; // chapterId -> number of times manually marked as revised
 let lastRevisedDates = {}; // chapterId -> dateStr of most recent checklist touch or revision-counter bump
+let revisionEvents = []; // {chapterId, date} — one entry per manual revision-counter bump, powers "revised this week" in the weekly report
 let examDate = null; // 'YYYY-MM-DD' target exam date set by the user, or null
 let playerName = '';     // Battle Tag used for the shared leaderboard
 let playerStandard = ''; // 10th / 11th / 12th / Drop — shown next to name on the leaderboard
@@ -5644,6 +6075,8 @@ function renderSubjectStories() {
   ['physics', 'chemistry', 'maths', 'advanced'].forEach(key => {
     const badge = document.getElementById('tabq-' + key);
     if (badge) badge.innerText = totals[key];
+    const sideBadge = document.getElementById('side-tabq-' + key);
+    if (sideBadge) sideBadge.innerText = totals[key];
   });
 }
 
@@ -6192,7 +6625,11 @@ function adjustRevision(chapterId, delta) {
   if (el) el.innerText = next;
 
   SFX.play(delta > 0 ? 'click' : 'uncheck');
-  if (delta > 0) { recordActivity(); touchChapterRevision(chapterId); } // an intentional revision counts as real study activity
+  if (delta > 0) {
+    recordActivity(); touchChapterRevision(chapterId); // an intentional revision counts as real study activity
+    revisionEvents.push({ chapterId, date: dateStr(0) });
+    saveRevisionEvents();
+  }
   saveRevisionCounts();
 }
 
@@ -6225,6 +6662,12 @@ async function saveRevisionCounts() {
   } catch (e) { console.error('Save error (revision counts):', e); }
 }
 
+async function saveRevisionEvents() {
+  try {
+    await localDB.set('jee-revision-events', JSON.stringify(revisionEvents), false);
+  } catch (e) { console.error('Save error (revision events):', e); }
+}
+
 function setAllCollapsed(subjectKey, collapsed) {
   const subject = SUBJECTS.find(s => s.key === subjectKey) || SUBJECTS_ADV.find(s => s.key === subjectKey);
   if (!subject) return;
@@ -6237,6 +6680,137 @@ function setAllCollapsed(subjectKey, collapsed) {
 }
 
 // ---------- Bottom Nav Categories + Chip Row ----------
+// ---------- Draggable bottom-nav position (grab the handle, drop it anywhere, lock it) ----------
+const NAV_POS_KEY = 'jee-nav-position';
+let navDragState = null;
+let navLocked = false;
+
+// Pauses decorative infinite animations (via the .is-scrolling class, see CSS) for the
+// duration of an active scroll gesture, so the main thread isn't repainting glow/shimmer
+// effects at the same time it's trying to keep scrolling smooth. Passive + rAF-throttled
+// so the listener itself never blocks or slows down the scroll it's trying to protect.
+function initScrollPerf() {
+  let ticking = false;
+  let stopTimer = null;
+  const onScroll = () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        document.body.classList.add('is-scrolling');
+        ticking = false;
+      });
+      ticking = true;
+    }
+    clearTimeout(stopTimer);
+    stopTimer = setTimeout(() => document.body.classList.remove('is-scrolling'), 150);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  document.addEventListener('scroll', onScroll, { passive: true, capture: true }); // also catch scrolls inside nested panels
+}
+
+function initNavDrag() {
+  const nav = document.getElementById('bottom-nav');
+  const handle = document.getElementById('nav-drag-handle');
+  if (!nav || !handle) return;
+
+  loadKey(NAV_POS_KEY).then(saved => {
+    navLocked = !!(saved && saved.locked);
+    if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
+      applyNavPosition(clampNavX(saved.x, nav), clampNavY(saved.y, nav));
+    }
+    updateNavLockUI();
+  });
+
+  handle.addEventListener('pointerdown', onNavDragStart);
+  window.addEventListener('resize', reclampNavPosition);
+}
+
+function onNavDragStart(e) {
+  if (navLocked) return;
+  const nav = document.getElementById('bottom-nav');
+  const rect = nav.getBoundingClientRect();
+  navDragState = { offsetX: e.clientX - rect.left, offsetY: e.clientY - rect.top };
+  try { document.getElementById('nav-drag-handle').setPointerCapture(e.pointerId); } catch (err) {}
+  nav.classList.add('nav-dragging');
+  document.addEventListener('pointermove', onNavDragMove);
+  document.addEventListener('pointerup', onNavDragEnd);
+}
+
+function onNavDragMove(e) {
+  if (!navDragState) return;
+  const nav = document.getElementById('bottom-nav');
+  const x = clampNavX(e.clientX - navDragState.offsetX, nav);
+  const y = clampNavY(e.clientY - navDragState.offsetY, nav);
+  applyNavPosition(x, y);
+}
+
+function onNavDragEnd() {
+  document.removeEventListener('pointermove', onNavDragMove);
+  document.removeEventListener('pointerup', onNavDragEnd);
+  const nav = document.getElementById('bottom-nav');
+  nav.classList.remove('nav-dragging');
+  if (!navDragState) return;
+  const rect = nav.getBoundingClientRect();
+  saveNavPosition(rect.left, rect.top);
+  navDragState = null;
+}
+
+function clampNavX(x, nav) { return Math.max(4, Math.min(x, window.innerWidth - nav.offsetWidth - 4)); }
+function clampNavY(y, nav) { return Math.max(20, Math.min(y, window.innerHeight - nav.offsetHeight - 4)); }
+
+function applyNavPosition(x, y) {
+  const nav = document.getElementById('bottom-nav');
+  nav.classList.add('nav-repositioned');
+  nav.style.left = x + 'px';
+  nav.style.top = y + 'px';
+}
+
+async function saveNavPosition(x, y) {
+  try { await localDB.set(NAV_POS_KEY, JSON.stringify({ x, y, locked: navLocked }), false); } catch (e) {}
+}
+
+// If the screen resizes/rotates after a manual drag, keep the bar on-screen rather
+// than letting it drift off the edge of a now-smaller viewport.
+function reclampNavPosition() {
+  const nav = document.getElementById('bottom-nav');
+  if (!nav || !nav.classList.contains('nav-repositioned')) return;
+  const rect = nav.getBoundingClientRect();
+  const x = clampNavX(rect.left, nav);
+  const y = clampNavY(rect.top, nav);
+  applyNavPosition(x, y);
+  saveNavPosition(x, y);
+}
+
+function toggleNavLock(e) {
+  if (e) e.stopPropagation();
+  navLocked = !navLocked;
+  updateNavLockUI();
+  const nav = document.getElementById('bottom-nav');
+  const rect = nav.getBoundingClientRect();
+  saveNavPosition(rect.left, rect.top);
+  SFX.play('click');
+}
+
+function updateNavLockUI() {
+  const btn = document.getElementById('settings-nav-lock-btn');
+  const handle = document.getElementById('nav-drag-handle');
+  if (btn) {
+    btn.innerHTML = navLocked ? '🔒 Position: Locked' : '🔓 Position: Unlocked';
+    btn.classList.toggle('util-btn-danger', navLocked);
+  }
+  if (handle) handle.classList.toggle('locked', navLocked);
+}
+
+function resetNavPosition(e) {
+  if (e) e.stopPropagation();
+  const nav = document.getElementById('bottom-nav');
+  nav.classList.remove('nav-repositioned');
+  nav.style.left = ''; nav.style.top = '';
+  navLocked = false;
+  updateNavLockUI();
+  try { localDB.set(NAV_POS_KEY, JSON.stringify(null), false); } catch (err) {}
+  SFX.play('click');
+}
+
 const NAV_CATEGORIES = {
   practice: { label: '⚔ Practice', tabs: [
     { id: 'daily', label: '📝 Daily Qs' },
@@ -6281,6 +6855,46 @@ TAB_TO_CATEGORY['weekly'] = 'practice';
 let activeCategory = 'practice';
 const lastTabInCategory = { practice: 'daily', progress: 'analysis', social: 'league', settings: 'data' };
 
+// Splits a nav label like "📝 Daily Qs" into its leading icon and the rest of the text,
+// so the desktop sidebar can lay them out in separate columns (icon | label | count badge).
+function splitNavLabel(label) {
+  const spaceIdx = label.indexOf(' ');
+  if (spaceIdx === -1) return { icon: '', text: label };
+  return { icon: label.slice(0, spaceIdx), text: label.slice(spaceIdx + 1) };
+}
+
+// Builds the desktop sidebar once from the same NAV_CATEGORIES data the mobile
+// bottom-nav + chip row already use, so the two navigation UIs never drift apart.
+function buildSidebarNav() {
+  const wrap = document.getElementById('sidebar-groups');
+  if (!wrap) return;
+  wrap.innerHTML = Object.entries(NAV_CATEGORIES).map(([catKey, cat]) => {
+    const catLabel = splitNavLabel(cat.label);
+    const links = cat.tabs.map(t => {
+      const tabLabel = splitNavLabel(t.label);
+      return `<button class="sidebar-link" data-tab="${t.id}" data-cat="${catKey}" onclick="switchTab('${t.id}', this)">
+        <span class="sl-icon">${tabLabel.icon}</span><span>${tabLabel.text}</span>
+        ${t.qcount ? `<span class="sl-qcount" id="side-tabq-${t.qcount}">0</span>` : ''}
+      </button>`;
+    }).join('');
+    return `<div class="sidebar-group">
+      <div class="sidebar-group-label">${catLabel.icon} ${catLabel.text}</div>
+      ${links}
+    </div>`;
+  }).join('');
+}
+
+// Keeps the desktop sidebar's highlighted link in sync with whatever tab is active.
+// Called from renderChipRow() so it stays correct no matter how the tab changed
+// (bottom-nav tap, sidebar click, keyboard shortcut, or a manifest deep link).
+function syncSidebarActive() {
+  const activeTabEl = document.querySelector('.tab-content.active');
+  const activeTabId = activeTabEl ? activeTabEl.id : null;
+  document.querySelectorAll('.sidebar-link').forEach(link => {
+    link.classList.toggle('active', link.dataset.tab === activeTabId);
+  });
+}
+
 function renderChipRow() {
   const row = document.getElementById('chip-row');
   if (!row) return;
@@ -6295,6 +6909,7 @@ function renderChipRow() {
   document.querySelectorAll('.bottom-nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.cat === activeCategory);
   });
+  syncSidebarActive();
 
   // HUD (level/XP/streak/exam countdown) is only relevant to actual studying —
   // hide it while browsing Social or Settings so those screens feel less cluttered.
@@ -6315,6 +6930,13 @@ function renderChipRow() {
 // (or its first tab, the first time). Does NOT re-render if already on this category.
 function switchCategory(catKey) {
   if (!NAV_CATEGORIES[catKey]) return;
+  const btn = document.querySelector(`.bottom-nav-btn[data-cat="${catKey}"]`);
+  if (btn) {
+    btn.classList.remove('bn-pop');
+    void btn.offsetWidth; // restart animation
+    btn.classList.add('bn-pop');
+    btn.addEventListener('animationend', () => btn.classList.remove('bn-pop'), { once: true });
+  }
   activeCategory = catKey;
   const targetTab = lastTabInCategory[catKey] || NAV_CATEGORIES[catKey].tabs[0].id;
   const alreadyActive = document.getElementById(targetTab)?.classList.contains('active');
@@ -6513,6 +7135,197 @@ function renderWeeklyProgress() {
       </tr>`;
     }).join('') : `<tr class="empty-row"><td colspan="7">Nothing archived yet — entries move here once they're over a week old.</td></tr>`;
   }
+}
+
+// ---------- Weekly Recap Card ----------
+function getPrevISOWeekKey(dStr) {
+  const d = new Date(dStr + 'T00:00:00');
+  d.setDate(d.getDate() - 7);
+  return getISOWeekKey(d.toISOString().slice(0, 10));
+}
+
+function computeWeeklyRecapData() {
+  const weeklyMap = computeWeeklyXpMap();
+  const thisWeekKey = getISOWeekKey(dateStr(0));
+  const prevWeekKey = getPrevISOWeekKey(dateStr(0));
+  const xpThisWeek = weeklyMap[thisWeekKey] || 0;
+  const xpPrevWeek = weeklyMap[prevWeekKey] || 0;
+
+  const currentTier = tierForXp(xpThisWeek);
+  const prevTier = tierForXp(xpPrevWeek);
+  const curIdx = LEAGUE_TIERS.findIndex(t => t.key === currentTier.key);
+  const prevIdx = LEAGUE_TIERS.findIndex(t => t.key === prevTier.key);
+  let movement = 'steady';
+  if (curIdx > prevIdx) movement = 'up';
+  else if (curIdx < prevIdx) movement = 'down';
+
+  const streak = computeDisplayStreak();
+
+  let weakest = null;
+  try {
+    const rows = computeWeakSpots(SUBJECTS, ch => getChapterPercentPure(ch.id), chapterTests, 1);
+    weakest = rows && rows[0] ? rows[0] : null;
+  } catch (e) { weakest = null; }
+
+  return {
+    name: playerName || 'Player',
+    xpThisWeek, xpPrevWeek, movement,
+    tierLabel: tierLabel(currentTier),
+    streak,
+    best: streakData.longestStreak || 0,
+    weakest,
+    weekRange: (() => {
+      const end = new Date(); const start = new Date(); start.setDate(end.getDate() - 6);
+      const fmt = d => d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      return `${fmt(start)} – ${fmt(end)}`;
+    })()
+  };
+}
+
+function drawRecapCard(data) {
+  const canvas = document.getElementById('recap-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cs = getComputedStyle(document.body);
+  const gold = cs.getPropertyValue('--gold-bright').trim() || '#ffcf3d';
+  const goldDim = cs.getPropertyValue('--gold').trim() || '#ff6a00';
+  const bg1 = cs.getPropertyValue('--bg-color').trim() || '#0a0710';
+  const bg2 = cs.getPropertyValue('--bg-glow').trim() || '#2a0f3a';
+  const panel = cs.getPropertyValue('--panel-bg').trim() || '#170d20';
+  const border = cs.getPropertyValue('--border').trim() || '#3a2452';
+  const muted = cs.getPropertyValue('--text-muted').trim() || '#9a83b0';
+  const fontDisplay = 'Orbitron, sans-serif';
+  const fontAccent = 'Rajdhani, sans-serif';
+
+  // Background
+  const grad = ctx.createRadialGradient(W / 2, H * 0.15, 40, W / 2, H * 0.5, W);
+  grad.addColorStop(0, bg2);
+  grad.addColorStop(1, bg1);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Border frame
+  ctx.strokeStyle = border;
+  ctx.lineWidth = 3;
+  ctx.strokeRect(16, 16, W - 32, H - 32);
+
+  // Header
+  ctx.textAlign = 'center';
+  ctx.fillStyle = gold;
+  ctx.font = `700 30px ${fontDisplay}`;
+  ctx.fillText('WEEKLY RECAP', W / 2, 90);
+  ctx.fillStyle = muted;
+  ctx.font = `600 20px ${fontAccent}`;
+  ctx.fillText(data.weekRange, W / 2, 122);
+
+  // Player name
+  ctx.fillStyle = '#fff';
+  ctx.font = `700 26px ${fontAccent}`;
+  ctx.fillText(data.name, W / 2, 168);
+
+  // Stat cards
+  const cardX = 60, cardW = W - 120;
+  let y = 210;
+  const rowH = 150;
+
+  function statCard(label, value, sub, accentColor) {
+    ctx.fillStyle = panel;
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 2;
+    roundRect(ctx, cardX, y, cardW, rowH - 20, 14);
+    ctx.fill(); ctx.stroke();
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = muted;
+    ctx.font = `700 18px ${fontAccent}`;
+    ctx.fillText(label.toUpperCase(), cardX + 24, y + 38);
+
+    ctx.fillStyle = accentColor || gold;
+    ctx.font = `700 42px ${fontDisplay}`;
+    ctx.fillText(value, cardX + 24, y + 86);
+
+    if (sub) {
+      ctx.fillStyle = muted;
+      ctx.font = `600 17px ${fontAccent}`;
+      wrapText(ctx, sub, cardX + 24, y + 114, cardW - 48, 20);
+    }
+    y += rowH;
+  }
+
+  statCard('XP Earned', `${data.xpThisWeek} XP`,
+    data.xpPrevWeek ? `${data.xpThisWeek >= data.xpPrevWeek ? '+' : ''}${data.xpThisWeek - data.xpPrevWeek} vs last week` : 'First tracked week',
+    gold);
+
+  const moveArrow = data.movement === 'up' ? '▲ Promoted' : data.movement === 'down' ? '▼ Dropped' : '● Holding';
+  const moveColor = data.movement === 'up' ? '#4dd97a' : data.movement === 'down' ? '#ff5d5d' : muted;
+  statCard('League', data.tierLabel, moveArrow, moveColor);
+  // recolor the movement sub-line
+  ctx.fillStyle = moveColor;
+
+  statCard('Streak', `${data.streak} Day${data.streak === 1 ? '' : 's'}`, `Best: ${data.best} days`, goldDim);
+
+  statCard('Weakest Chapter', data.weakest ? data.weakest.name : '— None flagged —',
+    data.weakest ? data.weakest.reason : 'Keep logging tests to surface weak spots', '#ff9d6a');
+
+  // Footer
+  ctx.textAlign = 'center';
+  ctx.fillStyle = muted;
+  ctx.font = `600 16px ${fontAccent}`;
+  ctx.fillText('JEE Battle Royale Tracker', W / 2, H - 40);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  let curY = y;
+  for (let i = 0; i < words.length; i++) {
+    const test = line + words[i] + ' ';
+    if (ctx.measureText(test).width > maxWidth && line) {
+      ctx.fillText(line, x, curY);
+      line = words[i] + ' ';
+      curY += lineHeight;
+    } else {
+      line = test;
+    }
+  }
+  ctx.fillText(line, x, curY);
+}
+
+function openWeeklyRecap() {
+  const data = computeWeeklyRecapData();
+  drawRecapCard(data);
+  document.getElementById('recap-modal-overlay').classList.add('open');
+  document.getElementById('recap-modal').classList.add('open');
+  SFX.play('click');
+}
+
+function closeRecapModal() {
+  document.getElementById('recap-modal-overlay').classList.remove('open');
+  document.getElementById('recap-modal').classList.remove('open');
+}
+
+function downloadRecapCard() {
+  const canvas = document.getElementById('recap-canvas');
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `weekly-recap-${dateStr(0)}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }, 'image/png');
 }
 
 // What the streak SHOULD show right now, without mutating anything — if the last active
@@ -7260,6 +8073,36 @@ function exportWeeklyReport() {
   const overallPct = Math.round(getOverallPercent());
   const display = computeDisplayStreak();
 
+  // League / Rank this week (mirrors the Weekly Recap Card's XP + promotion logic)
+  const weeklyXpMap = computeWeeklyXpMap();
+  const thisWeekKey = getISOWeekKey(dateStr(0));
+  const prevWeekKey = getPrevISOWeekKey(dateStr(0));
+  const xpThisWeekReport = weeklyXpMap[thisWeekKey] || 0;
+  const xpPrevWeekReport = weeklyXpMap[prevWeekKey] || 0;
+  const reportCurrentTier = tierForXp(xpThisWeekReport);
+  const reportPrevTier = tierForXp(xpPrevWeekReport);
+  const reportCurIdx = LEAGUE_TIERS.findIndex(t => t.key === reportCurrentTier.key);
+  const reportPrevIdx = LEAGUE_TIERS.findIndex(t => t.key === reportPrevTier.key);
+  const wasPromoted = reportCurIdx > reportPrevIdx;
+  const wasDemoted = reportCurIdx < reportPrevIdx;
+  const leagueMovementLabel = wasPromoted ? `⬆ Promoted from ${tierLabel(reportPrevTier)}` : wasDemoted ? `⬇ Dropped from ${tierLabel(reportPrevTier)}` : '➡ Held steady';
+
+  // Revision activity this week — chapters bumped via the manual + counter, plus all-time totals
+  const weekRevisionEvents = revisionEvents.filter(e => inLastWeek(e.date));
+  const weekRevisionByChapter = {};
+  weekRevisionEvents.forEach(e => { weekRevisionByChapter[e.chapterId] = (weekRevisionByChapter[e.chapterId] || 0) + 1; });
+  const chapterSubjectLabel = chapterId => {
+    for (const s of SUBJECTS) {
+      if (s.chapters.some(ch => ch.id === chapterId)) return SUBJECT_META[s.key].label;
+    }
+    return '-';
+  };
+  const revisionRows = Object.keys(weekRevisionByChapter)
+    .map(id => ({ id, name: getChapterName(id) || id, subject: chapterSubjectLabel(id), timesThisWeek: weekRevisionByChapter[id], allTime: revisionCounts[id] || 0 }))
+    .sort((a, b) => b.timesThisWeek - a.timesThisWeek);
+  const totalRevisionsAllTime = Object.values(revisionCounts).reduce((sum, n) => sum + (Number(n) || 0), 0);
+  const totalRevisionsThisWeek = weekRevisionEvents.length;
+
   const testRows = weekChapterTests.map(t => `<tr><td>${t.subject}</td><td>${t.topic}</td><td>${t.myscore}/${t.questions}</td><td>${getMistakeList(t).join(', ') || '-'}</td><td>${t.date || '-'}</td></tr>`).join('')
     || `<tr><td colspan="5" style="text-align:center;color:#888;">No chapter tests logged this week</td></tr>`;
 
@@ -7297,6 +8140,9 @@ function exportWeeklyReport() {
 
   const subjectRowsHtml = subjectRows.map(s => `<tr><td>${s.label}</td><td>${s.avg}%</td><td>${s.completed} / ${s.of}</td></tr>`).join('');
 
+  const revisionRowsHtml = revisionRows.map(r => `<tr><td>${r.subject}</td><td>${r.name}</td><td>${r.timesThisWeek}</td><td>${r.allTime}</td></tr>`).join('')
+    || `<tr><td colspan="4" style="text-align:center;color:#888;">No manual revisions logged this week</td></tr>`;
+
   const dqRows = weekDailyQuestions.map(d => `<tr><td>${d.date || '-'}</td><td>${d.subject}</td><td>${d.level}</td><td>${d.count}</td><td>${d.timeMin ? d.timeMin + 'm' : '-'}</td><td>${d.exam}</td></tr>`).join('')
     || `<tr><td colspan="6" style="text-align:center;color:#888;">No daily questions logged this week</td></tr>`;
 
@@ -7332,9 +8178,28 @@ function exportWeeklyReport() {
     <div class="stat-box"><div class="label">Questions This Week</div><div class="value">${dqTotal}</div></div>
   </div>
 
+  <h2>League / Rank This Week</h2>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="label">Current League</div><div class="value">${tierIconGlyph(reportCurrentTier)} ${tierLabel(reportCurrentTier)}</div></div>
+    <div class="stat-box"><div class="label">XP Earned</div><div class="value">${xpThisWeekReport} XP</div></div>
+    <div class="stat-box"><div class="label">Last Week</div><div class="value">${xpPrevWeekReport} XP</div></div>
+    <div class="stat-box"><div class="label">Movement</div><div class="value" style="font-size:14px;">${leagueMovementLabel}</div></div>
+  </div>
+  <p style="font-size:12px;color:#666;">10 XP per Daily Question logged. League resets each week based on that week's XP.</p>
+
   <h2>Subject Progress</h2>
   <table><thead><tr><th>Subject</th><th>Checklist %</th><th>Chapters Completed</th></tr></thead>
   <tbody>${subjectRowsHtml}</tbody></table>
+
+  <h2>Revision Activity</h2>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="label">Chapters Revised This Week</div><div class="value">${revisionRows.length}</div></div>
+    <div class="stat-box"><div class="label">Revision Taps This Week</div><div class="value">${totalRevisionsThisWeek}</div></div>
+    <div class="stat-box"><div class="label">Total Revision Taps (All Time)</div><div class="value">${totalRevisionsAllTime}</div></div>
+  </div>
+  <table><thead><tr><th>Subject</th><th>Chapter</th><th>Revised This Week</th><th>All-Time Count</th></tr></thead>
+  <tbody>${revisionRowsHtml}</tbody></table>
+  <p style="font-size:12px;color:#666;">Counts manual taps on each chapter's 🔁 Revisions counter — a deliberate revisit, separate from checklist progress.</p>
 
   <h2>Self-Study Hours (Daily Average, Last 7 Days)</h2>
   ${weekAvgStudyHours ? `
@@ -7787,7 +8652,7 @@ function renderLeaderboard() {
     return `<tr class="${isYou ? 'lb-you' : ''}">
       <td class="lb-rank">${rankIcon}</td>
       <td>${nameWithStandard(e)}${isYou ? ' (you)' : ''}</td>
-      <td>${leagueIconSvg(e.leagueKey || 'beginner')} ${e.leagueName || 'Beginner'}</td>
+      <td>${leagueIconSvg(e.leagueKey || 'bronze-IV')} ${e.leagueName || 'Bronze IV'}</td>
       <td>${e.weeklyXp || 0} XP</td>
     </tr>`;
   }).join('');
@@ -9043,6 +9908,7 @@ function addCustomTest() {
   renderCustomTests();
   saveCustomTests();
   recordActivity();
+  syncLeaderboard();
   SFX.play('success');
 
   clearCustomTestForm();
@@ -9151,6 +10017,7 @@ function addAdvChapterTest() {
   saveAdvChapterTests();
   recordActivity();
   renderAdvWeakSpotRadar();
+  syncLeaderboard();
 
   clearAdvChapterTestForm();
 }
@@ -9248,6 +10115,7 @@ function addAdvMajorTest() {
   renderAdvMajorTests();
   saveAdvMajorTests();
   recordActivity();
+  syncLeaderboard();
 
   clearAdvMajorTestForm();
 }
@@ -9261,7 +10129,7 @@ function deleteAdvMajorTest(index) {
 
 // ---------- Backup / Restore ----------
 function exportBackup() {
-  const data = { progressData, advProgressData, chapterTests, majorTests, dailyQuestions, customTests, advChapterTests, advMajorTests, collapsedState, chapterCompletionDates, chapter70Dates, revisionCounts, lastRevisedDates, streakData, presentData, examDate, studyHours, coachingLog, dailySchedule, dailyTargets, targetProgress, exportedAt: new Date().toISOString() };
+  const data = { progressData, advProgressData, chapterTests, majorTests, dailyQuestions, customTests, advChapterTests, advMajorTests, collapsedState, chapterCompletionDates, chapter70Dates, revisionCounts, lastRevisedDates, revisionEvents, streakData, presentData, examDate, studyHours, coachingLog, dailySchedule, dailyTargets, targetProgress, exportedAt: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -9300,6 +10168,7 @@ function importBackup(event) {
       chapter70Dates = data.chapter70Dates || {};
       revisionCounts = data.revisionCounts || {};
       lastRevisedDates = data.lastRevisedDates || {};
+      revisionEvents = data.revisionEvents || [];
       examDate = data.examDate || null;
       streakData = data.streakData || { lastActiveDate: null, currentStreak: 0, longestStreak: 0 };
       presentData = data.presentData || { dates: [] };
@@ -9368,7 +10237,7 @@ const RESET_KEYS = [
   'jee-progress', 'jee-adv-progress', 'jee-chapter-tests', 'jee-adv-chapter-tests',
   'jee-major-tests', 'jee-adv-major-tests', 'jee-daily-questions', 'jee-collapsed',
   'jee-streak', 'jee-present-days', 'jee-player-name', 'jee-completion-dates', 'jee-theme',
-  'jee-notif-enabled', 'jee-last-notified', 'jee-revision-counts', 'jee-last-revised-dates', 'jee-chapter-70-dates', 'jee-study-reminder-last-notified', 'jee-exam-date', 'jee-custom-tests', 'jee-study-hours', 'jee-coaching-log', 'jee-coaching-hw-last-notified', 'jee-coaching-rev-last-notified', 'jee-lb-visible', 'jee-onboarding-done', 'jee-daily-schedule', 'jee-daily-targets', 'jee-target-progress'
+  'jee-notif-enabled', 'jee-last-notified', 'jee-revision-counts', 'jee-last-revised-dates', 'jee-revision-events', 'jee-chapter-70-dates', 'jee-study-reminder-last-notified', 'jee-exam-date', 'jee-custom-tests', 'jee-study-hours', 'jee-coaching-log', 'jee-coaching-hw-last-notified', 'jee-coaching-rev-last-notified', 'jee-lb-visible', 'jee-onboarding-done', 'jee-daily-schedule', 'jee-daily-targets', 'jee-target-progress'
 ];
 
 function openResetModal() {
@@ -9439,6 +10308,7 @@ async function executeReset() {
   chapterCompletionDates = {};
   chapter70Dates = {};
   revisionCounts = {};
+  revisionEvents = [];
   examDate = null;
   renderExamCountdown();
   updateExamDateUI();
@@ -9589,23 +10459,86 @@ async function checkCoachingReminders() {
 }
 
 // ---------- League / Rewards (weekly XP from Daily Qs entries) ----------
+// Rank system inspired by Free Fire (division ladder: IV → I inside each tier, promotion feel)
+// and Shadow Fight (belt-color progression). The underlying XP thresholds are shared — only
+// the presented name/icon/color switch, based on whichever Game Mode the player has selected.
 const XP_PER_DAILY_Q = 10;
-const LEAGUE_TIERS = [
-  { key: 'beginner', name: 'Beginner', icon: '💠', tag: 'Every Topper Starts Here', min: 0, max: 299 },
-  { key: 'bronze', name: 'Bronze', icon: '🥉', tag: 'Top 50%ile Achievers', min: 300, max: 699 },
-  { key: 'silver', name: 'Silver', icon: '🥈', tag: 'Consistent Grinder', min: 700, max: 1199 },
-  { key: 'gold', name: 'Gold', icon: '🥇', tag: 'Den of Top 10%ilers', min: 1200, max: 1999 },
-  { key: 'diamond', name: 'Diamond', icon: '💎', tag: 'Top 5% Elite Club', min: 2000, max: 2999 },
-  { key: 'legend', name: 'Legend', icon: '👑', tag: 'League of Legends', min: 3000, max: Infinity }
-];
 
-// Custom shield badge icon for league tiers (Legend gets a crown on top) — no emoji.
+// 6 leagues total, matching the real Free Fire rank ladder: Bronze, Silver, Gold,
+// Platinum, Diamond, then Grandmaster as the elite topmost league (starts at 5000 XP).
+const RANK_BASE_TIERS = [
+  { key: 'bronze',   ff: { name: 'Bronze',   icon: '🥉' }, sf: { name: 'Iron Blade',    icon: '🗡️' }, color: '#cd7f32', tag: 'Every Topper Starts Here' },
+  { key: 'silver',   ff: { name: 'Silver',   icon: '🥈' }, sf: { name: 'Steel Blade',   icon: '🗡️' }, color: '#c9ccd1', tag: 'Consistent Grinder' },
+  { key: 'gold',     ff: { name: 'Gold',     icon: '🥇' }, sf: { name: 'Crimson Blade', icon: '🗡️' }, color: '#ffcf3d', tag: 'Den of Top 10%ilers' },
+  { key: 'platinum', ff: { name: 'Platinum', icon: '🔷' }, sf: { name: 'Jade Blade',    icon: '🗡️' }, color: '#7de8c8', tag: 'Platinum Grinders Club' },
+  { key: 'diamond',  ff: { name: 'Diamond',  icon: '💎' }, sf: { name: 'Shadow Blade',  icon: '🗡️' }, color: '#22d3ee', tag: 'Top 5% Elite Club' }
+];
+const RANK_TOP_TIER    = { key: 'grandmaster', ff: { name: 'Grandmaster', icon: '👑' }, sf: { name: 'Blade Master', icon: '⚔️' }, color: '#ff3d7d', tag: 'League of Legends' };
+
+const RANK_DIVISION_SIZE = 250;   // XP per division
+const RANK_TIER_SIZE = RANK_DIVISION_SIZE * 4; // 4 divisions per tier, IV (lowest) to I (highest)
+const RANK_DIVISION_LABELS = ['IV', 'III', 'II', 'I'];
+
+// Flattened ladder actually used for XP lookups — each entry is one division (or the
+// un-divided top tier). Order low-to-high defines promotion order everywhere.
+// Bronze IV starts at 0 XP; Grandmaster (the 6th and topmost league) starts at 5000 XP.
+const LEAGUE_TIERS = (function buildLeagueTiers() {
+  const tiers = [];
+  RANK_BASE_TIERS.forEach((base, ti) => {
+    RANK_DIVISION_LABELS.forEach((div, di) => {
+      const min = ti * RANK_TIER_SIZE + di * RANK_DIVISION_SIZE;
+      tiers.push({ key: base.key + '-' + div, base, div, min, max: min + RANK_DIVISION_SIZE - 1 });
+    });
+  });
+  const gmMin = RANK_BASE_TIERS.length * RANK_TIER_SIZE; // 5 tiers x 1000 XP = 5000 XP
+  tiers.push({ key: RANK_TOP_TIER.key, base: RANK_TOP_TIER, div: null, min: gmMin, max: Infinity });
+  return tiers;
+})();
+
+// Mode-aware label/icon/color for a flattened tier entry — this is what changes look
+// depending on whether the player is in Free Fire, Shadow Fight, or any other Game Mode
+// (Fortnite/CoD fall back to the Free Fire-style naming since they share the shield motif).
+function rankModeStyle() {
+  return (typeof currentGameMode !== 'undefined' && currentGameMode === 'shadowfight') ? 'sf' : 'ff';
+}
+function tierLabel(t) {
+  const style = t.base[rankModeStyle()];
+  return t.div ? style.name + ' ' + t.div : style.name;
+}
+function tierIconGlyph(t) {
+  return t.base[rankModeStyle()].icon;
+}
+function tierColor(t) {
+  return t.base.color;
+}
+// The name synced to the shared teacher-dashboard leaderboard is always the Free Fire
+// naming, so every student's rank reads consistently regardless of their own Game Mode.
+function tierSyncName(t) {
+  return t.div ? t.base.ff.name + ' ' + t.div : t.base.ff.name;
+}
+
+// Custom badge icon for league tiers — shield motif for Free Fire-style modes (crown on
+// Grandmaster), sword motif for Shadow Fight mode (blade tint + gem studs for the division).
 function leagueIconSvg(key) {
+  const t = LEAGUE_TIERS.find(x => x.key === key) || LEAGUE_TIERS[0];
+  const baseKey = t.base.key;
+  if (rankModeStyle() === 'sf') {
+    const gemCount = t.div ? (RANK_DIVISION_LABELS.indexOf(t.div) + 1) : 4;
+    const gems = Array.from({ length: gemCount }, (_, i) =>
+      `<circle class="sword-gem" cx="12" cy="${4.6 + i * 2.3}" r="0.85"/>`).join('');
+    return `<svg class="league-icon-svg tier-${baseKey}" viewBox="0 0 24 24">
+      <path class="sword-blade" d="M12 1.4 L13.7 14.5 H10.3 Z"/>
+      ${gems}
+      <rect class="sword-guard" x="7.5" y="14.5" width="9" height="1.8" rx="0.7"/>
+      <rect class="sword-grip" x="10.8" y="16.3" width="2.4" height="4.6" rx="0.8"/>
+      <circle class="sword-pommel" cx="12" cy="21.6" r="1.4"/>
+    </svg>`;
+  }
   const shield = 'M12 2 L20 5.2 V11 C20 16.3 16.6 20.4 12 22 C7.4 20.4 4 16.3 4 11 V5.2 Z';
   const crown = 'M4.5 8.5 L7.3 14.5 H16.7 L19.5 8.5 L15 11.5 L12 6 L9 11.5 Z';
   let inner = `<path class="league-icon-shield" d="${shield}"/>`;
-  if (key === 'legend') inner += `<path class="league-icon-crown" d="${crown}"/>`;
-  return `<svg class="league-icon-svg tier-${key}" viewBox="0 0 24 24">${inner}</svg>`;
+  if (baseKey === 'grandmaster') inner += `<path class="league-icon-crown" d="${crown}"/>`;
+  return `<svg class="league-icon-svg tier-${baseKey}" viewBox="0 0 24 24">${inner}</svg>`;
 }
 
 function getISOWeekKey(dStr) {
@@ -9629,26 +10562,99 @@ function computeWeeklyXpMap() {
 }
 
 function tierForXp(xp) {
-  return LEAGUE_TIERS.find(t => xp >= t.min && xp <= t.max) || LEAGUE_TIERS[0];
+  const t = LEAGUE_TIERS.find(t => xp >= t.min && xp <= t.max) || LEAGUE_TIERS[0];
+  // `.name` kept for any code (own stats sync) expecting a plain display name.
+  return Object.assign({}, t, { name: tierSyncName(t), icon: tierIconGlyph(t) });
+}
+
+// Tracks the last league division the player was seen in, so a promotion cutscene
+// only fires once per crossing (not on every re-render) and never on a demotion.
+// `null` means "not loaded yet" — the very first render after app load just records
+// the current tier silently instead of celebrating (there's nothing to promote *from*).
+let lastKnownLeagueKey = undefined; // undefined = not loaded from storage yet
+
+async function loadLastKnownLeague() {
+  lastKnownLeagueKey = await loadKey('jee-last-league-key');
+}
+
+function saveLastKnownLeague(key) {
+  localDB.set('jee-last-league-key', JSON.stringify(key), false).catch(() => {});
+}
+
+function checkLeaguePromotion(currentTier) {
+  const newIndex = LEAGUE_TIERS.findIndex(t => t.key === currentTier.key);
+  if (lastKnownLeagueKey !== undefined && lastKnownLeagueKey !== null) {
+    const oldIndex = LEAGUE_TIERS.findIndex(t => t.key === lastKnownLeagueKey);
+    if (oldIndex !== -1 && newIndex > oldIndex) {
+      // Only cutscene on crossing into a new BASE tier (Bronze -> Silver etc.), not
+      // every division tick (IV -> III), so it stays a rare, special moment.
+      const oldBase = LEAGUE_TIERS[oldIndex].base.key;
+      const newBase = currentTier.base.key;
+      if (newBase !== oldBase) showLeagueCutscene(currentTier);
+    }
+  }
+  if (lastKnownLeagueKey !== currentTier.key) {
+    lastKnownLeagueKey = currentTier.key;
+    saveLastKnownLeague(currentTier.key);
+  }
+}
+
+function showLeagueCutscene(tier) {
+  const overlay = document.getElementById('league-cutscene');
+  const iconEl = document.getElementById('league-cutscene-icon');
+  const titleEl = document.getElementById('league-cutscene-title');
+  const subEl = document.getElementById('league-cutscene-sub');
+  if (!overlay || !iconEl || !titleEl || !subEl) return;
+
+  iconEl.innerHTML = leagueIconSvg(tier.key);
+  titleEl.innerText = `${tier.base[rankModeStyle()].name} League!`;
+  subEl.innerHTML = `You've been promoted to <b>${tierLabel(tier)}</b> — ${tier.base.tag}.`;
+
+  // Scatter a small burst of particles around the icon for a bit of screen-shake-free "juice".
+  overlay.querySelectorAll('.league-cutscene-particle').forEach(p => p.remove());
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'league-cutscene-particle';
+    p.style.setProperty('--pangle', (i * (360 / 14)) + 'deg');
+    p.style.animationDelay = (Math.random() * 0.15) + 's';
+    overlay.appendChild(p);
+  }
+
+  SFX.play('levelup');
+  if (typeof HAPTICS !== 'undefined') HAPTICS.buzz('levelup');
+  overlay.classList.add('show');
+}
+
+function hideLeagueCutscene() {
+  const overlay = document.getElementById('league-cutscene');
+  if (overlay) overlay.classList.remove('show');
 }
 
 function renderLeague() {
   const weeklyMap = computeWeeklyXpMap();
   const currentWeekKey = getISOWeekKey(dateStr(0));
   const currentXp = weeklyMap[currentWeekKey] || 0;
-  const currentTier = tierForXp(currentXp);
+  const currentTier = LEAGUE_TIERS.find(t => currentXp >= t.min && currentXp <= t.max) || LEAGUE_TIERS[0];
+  checkLeaguePromotion(currentTier);
 
   const banner = document.getElementById('league-current-banner');
-  if (banner) banner.innerHTML = `${leagueIconSvg(currentTier.key)} Current League: ${currentTier.name} — ${currentXp} XP this week`;
+  if (banner) banner.innerHTML = `${leagueIconSvg(currentTier.key)} Current Rank: ${tierLabel(currentTier)} — ${currentXp} XP this week`;
 
+  // Track shows one node per BASE tier (+ Grandmaster) — the current node also
+  // carries a small division chip so promotion within a tier is still visible, Free-Fire-style.
   const track = document.getElementById('league-progress-track');
+  const nodeGroups = [...RANK_BASE_TIERS.map(b => LEAGUE_TIERS.find(t => t.base.key === b.key && t.div === 'IV')), LEAGUE_TIERS[LEAGUE_TIERS.length - 1]];
   if (track) {
-    track.innerHTML = LEAGUE_TIERS.map(t => {
+    track.innerHTML = nodeGroups.map(t => {
       const reached = currentXp >= t.min;
-      const isCurrent = t.key === currentTier.key;
+      const isCurrent = t.base.key === currentTier.base.key;
+      const divChip = (isCurrent && currentTier.div) ? `<span class="node-div-chip">${currentTier.div}</span>` : '';
       return `<div class="league-node ${reached ? 'reached' : ''} ${isCurrent ? 'current' : ''}">
-        <div class="node-icon"><span class="node-icon-glyph tier-${t.key}">${leagueIconSvg(t.key)}</span></div>
-        <div class="node-label">${t.min}</div>
+        <div class="node-icon">
+          <span class="node-icon-glyph tier-${t.base.key}">${leagueIconSvg(t.key)}</span>
+          ${divChip}
+        </div>
+        <div class="node-label">${t.base[rankModeStyle()].name}</div>
       </div>`;
     }).join('');
   }
@@ -9657,29 +10663,75 @@ function renderLeague() {
   const subNote = document.getElementById('league-sub-note');
   if (subNote) {
     subNote.innerText = nextTier
-      ? `${Math.max(0, nextTier.min - currentXp)} XP more to reach ${nextTier.name} (${nextTier.min} XP)`
-      : `You've hit the top league — Legend status!`;
+      ? `${Math.max(0, nextTier.min - currentXp)} XP more to reach ${tierLabel(nextTier)} (${nextTier.min} XP)`
+      : `You've hit the top rank — ${tierLabel(currentTier)} status!`;
   }
 
-  // Achieved counts: how many past weeks landed in each tier
+  // Achieved counts: grouped by base tier (ignoring division) — how many past weeks
+  // landed anywhere in that tier.
   const achievedCounts = {};
-  LEAGUE_TIERS.forEach(t => achievedCounts[t.key] = 0);
-  Object.values(weeklyMap).forEach(xp => { achievedCounts[tierForXp(xp).key]++; });
+  nodeGroups.forEach(t => achievedCounts[t.base.key] = 0);
+  Object.values(weeklyMap).forEach(xp => {
+    const t = LEAGUE_TIERS.find(x => xp >= x.min && xp <= x.max) || LEAGUE_TIERS[0];
+    achievedCounts[t.base.key] = (achievedCounts[t.base.key] || 0) + 1;
+  });
+
+  // "My League" (default): only the league the player is currently in is shown in full —
+  // every other league renders as a locked silhouette. "All Leagues" reveals the whole
+  // 6-league collection with full stats, same as before.
+  const showAll = leagueViewMode === 'all';
+  const btnCurrent = document.getElementById('league-view-btn-current');
+  const btnAll = document.getElementById('league-view-btn-all');
+  if (btnCurrent) btnCurrent.classList.toggle('active', !showAll);
+  if (btnAll) btnAll.classList.toggle('active', showAll);
 
   const grid = document.getElementById('league-grid');
   if (grid) {
-    grid.innerHTML = LEAGUE_TIERS.map(t => `
-      <div class="league-card ${t.key === currentTier.key ? 'current-tier' : ''}">
-        <div class="lg-icon tier-${t.key}">${leagueIconSvg(t.key)}</div>
-        <div class="lg-name">${t.name}</div>
-        <div class="lg-tag">${t.tag}</div>
-        <div class="lg-points">${t.max === Infinity ? `${t.min}+` : `${t.min}-${t.max}`} XP</div>
-        <div class="lg-achieved">Achieved ${achievedCounts[t.key]} Time${achievedCounts[t.key] === 1 ? '' : 's'}</div>
-      </div>`).join('');
+    grid.innerHTML = nodeGroups.map(t => {
+      const isCurrent = t.base.key === currentTier.base.key;
+      if (!showAll && !isCurrent) {
+        return `
+        <div class="league-card locked">
+          <span class="lg-lock-badge">🔒</span>
+          <div class="lg-icon tier-${t.base.key}">${leagueIconSvg(t.key)}</div>
+          <div class="lg-name">${t.base[rankModeStyle()].name}</div>
+          <div class="lg-locked-note">Reach ${t.min} XP to unlock</div>
+        </div>`;
+      }
+      const groupMax = t.base.key === RANK_TOP_TIER.key ? Infinity
+        : LEAGUE_TIERS.find(x => x.base.key === t.base.key && x.div === 'I').max;
+      const divisionPips = t.base.key !== RANK_TOP_TIER.key
+        ? `<div class="lg-divisions">${RANK_DIVISION_LABELS.map(d => {
+            const on = t.base.key === currentTier.base.key && currentTier.div && RANK_DIVISION_LABELS.indexOf(currentTier.div) >= RANK_DIVISION_LABELS.indexOf(d);
+            return `<span class="lg-div-pip ${on ? 'on' : ''}">${d}</span>`;
+          }).join('')}</div>`
+        : '';
+      return `
+      <div class="league-card ${isCurrent ? 'current-tier' : ''}">
+        <div class="lg-icon tier-${t.base.key}">${leagueIconSvg(t.key)}</div>
+        <div class="lg-name">${t.base[rankModeStyle()].name}</div>
+        <div class="lg-tag">${t.base.tag}</div>
+        <div class="lg-points">${groupMax === Infinity ? `${t.min}+` : `${t.min}-${groupMax}`} XP</div>
+        ${divisionPips}
+        <div class="lg-achieved">Achieved ${achievedCounts[t.base.key] || 0} Time${achievedCounts[t.base.key] === 1 ? '' : 's'}</div>
+      </div>`;
+    }).join('');
   }
 }
 
+// Controls whether the League Collection grid shows only the player's current league
+// (locked view, the default) or the full 6-league roster with stats ("All Leagues").
+let leagueViewMode = 'current';
+function setLeagueViewMode(mode) {
+  leagueViewMode = mode === 'all' ? 'all' : 'current';
+  renderLeague();
+}
+
+
 async function init() {
+  buildSidebarNav();
+  initNavDrag();
+  initScrollPerf();
   await loadSfxPref();
   await loadHapticsPref();
   await loadEfficientModePref();
@@ -9706,6 +10758,9 @@ async function init() {
 
   const savedLastRevisedDates = await loadKey('jee-last-revised-dates');
   lastRevisedDates = savedLastRevisedDates || {};
+
+  const savedRevisionEvents = await loadKey('jee-revision-events');
+  revisionEvents = savedRevisionEvents || [];
 
   const savedExamDate = await loadKey('jee-exam-date');
   examDate = savedExamDate || null;
@@ -9762,6 +10817,7 @@ async function init() {
   const savedCoachingLog = await loadKey('jee-coaching-log');
   coachingLog = savedCoachingLog || [];
   renderCoachingLog();
+  await loadLastKnownLeague();
   renderLeague();
   renderWeeklyProgress();
 

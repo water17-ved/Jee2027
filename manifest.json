@@ -44,29 +44,6 @@
       "purpose": "maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "screenshots/narrow-daily.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Daily tab — schedule, targets, and streak"
-    },
-    {
-      "src": "screenshots/narrow-advanced.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "JEE Advanced zone with per-chapter reference tracking"
-    },
-    {
-      "src": "screenshots/wide-dashboard.png",
-      "sizes": "1280x800",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Full dashboard on a wide/tablet screen"
-    }
-  ],
   "shortcuts": [
     {
       "name": "Mark Present Today",
