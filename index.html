@@ -81,24 +81,6 @@
     .checklist { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
   }
 
-  /* ---- Short landscape phones: reclaim vertical space so content isn't buried under header/HUD ---- */
-  @media (max-height: 480px) and (orientation: landscape) {
-    header { padding: 14px 16px 12px; margin-bottom: 12px; }
-    header h1 { font-size: 1.1rem; }
-    #app-tagline { display: none; }
-    .hud { padding: 8px 14px; margin-bottom: 10px; }
-    .splash-icon { width: 56px; height: 56px; }
-    .splash-spinner { margin-top: 8px; }
-
-    /* Compact the fixed bottom-nav so it doesn't eat a big chunk of a short screen,
-       and shrink the body's reserved bottom padding to match — otherwise content
-       ends up hidden behind the nav instead of stopping cleanly above it. */
-    .bottom-nav-btn { padding: 5px 4px 4px; }
-    .bottom-nav-btn .bn-icon { font-size: 1rem; }
-    .bottom-nav-btn .bn-label { font-size: 0.6rem; }
-    body { padding-bottom: calc(50px + env(safe-area-inset-bottom, 0px)) !important; }
-  }
-
   /* ---- Premium finish: shared refinements that apply under BOTH Free Fire and Fortnite skins ---- */
   .chapter-card, .log-section, .hud, .completion-card, .story-card, .trend-chart-wrap, .danger-zone-panel {
     position: relative;
@@ -2541,7 +2523,7 @@
   <div class="reset-modal-overlay" id="login-modal-overlay" onclick="closeLoginModal()"></div>
   <div class="login-modal" id="login-modal">
     <h2>👤 Sign In</h2>
-    <p>Sign in with Google to join the live leaderboard. Only your display name, league, and score summary are shared — all your chapter progress, tests, and daily entries stay local on this device.</p>
+    <p>Sign in with Google to join the live leaderboard. Your name, league, score summary, mock test log, and daily question log sync for your teacher's dashboard — chapter checklists and the coaching log always stay local on this device.</p>
     <div class="login-modal-actions">
       <button class="util-btn util-btn-violet" onclick="doGoogleSignIn()">Sign in with Google</button>
     </div>
@@ -3491,7 +3473,7 @@
 
       <div class="manual-block">
         <h3>🌐 Leaderboard Tab</h3>
-        <p>Sign in with Google via the account bar at the top of the app to join the live, online leaderboard — everyone currently logged in is ranked by League (weekly XP tier) first, plus separate tables for average mock score and subject-wise syllabus completion. Your actual tracker data (checklists, tests, daily questions, coaching log) always stays local on your device — only your name, league, and score summary are shared.</p>
+        <p>Sign in with Google via the account bar at the top of the app to join the live, online leaderboard — everyone currently logged in is ranked by League (weekly XP tier) first, plus separate tables for average mock score and subject-wise syllabus completion. Your name, league, score summary, mock test log, and daily question log are shared while "Show me on leaderboard" is on (for your teacher's Command Deck view); checklists and the coaching log always stay local on your device.</p>
       </div>
     </div>
   </div>
@@ -3561,9 +3543,11 @@ const localDB = {
   }
 };
 
-// ---------- Firebase (login + live shared leaderboard ONLY) ----------
-// Everything else in this app (checklists, tests, daily questions, coaching log, streaks)
-// stays 100% local via localDB above and never touches this.
+// ---------- Firebase (login + live shared leaderboard, incl. mock test log & question log) ----------
+// Checklists and the coaching log stay 100% local via localDB above and never touch this.
+// Mock tests and daily question entries DO sync (capped/summarized — see buildTestLogForSync
+// and buildQuestionLogForSync below) so a teacher's Command Deck can see real progress, not
+// just a completion percentage. This only happens while "Show me on leaderboard" is on.
 //
 // >>> REQUIRED ONE-TIME SETUP <<<
 // This needs a free Firebase project (takes ~5 minutes, no credit card):
@@ -3742,6 +3726,29 @@ async function toggleLbVisibility() {
 }
 
 // Build this player's current stats snapshot (shared shape for both local + Firebase modes)
+// Recent major-test entries synced for the teacher dashboard (capped so the shared
+// leaderboard doc stays a sane size). Only sent while "Show me on leaderboard" is on.
+function buildTestLogForSync() {
+  return majorTests.slice(0, 100).map(t => {
+    const scores = computeSubjectScores(t);
+    const totals = computeMockTotals(t);
+    return {
+      name: t.name || '', date: t.date || '', maxmarks: Number(t.maxmarks) || 0,
+      scored: Math.round(totals.scored),
+      physics: Math.round(scores.phys), chemistry: Math.round(scores.chem), maths: Math.round(scores.maths),
+      note: t.note || ''
+    };
+  });
+}
+
+// Recent daily-question-log entries synced for the teacher dashboard (capped, same as above).
+function buildQuestionLogForSync() {
+  return dailyQuestions.slice(0, 150).map(q => ({
+    date: q.date || '', subject: q.subject || '', level: q.level || '',
+    count: Number(q.count) || 0, timeMin: q.timeMin || '', exam: q.exam || '', note: q.note || ''
+  }));
+}
+
 function buildOwnStats() {
   const weeklyMap = (typeof computeWeeklyXpMap === 'function') ? computeWeeklyXpMap() : {};
   const currentWeekKey = (typeof getISOWeekKey === 'function') ? getISOWeekKey(dateStr(0)) : null;
@@ -3760,7 +3767,9 @@ function buildOwnStats() {
     major: majorTestStats(),
     weeklyXp,
     leagueKey: league.key,
-    leagueName: league.name
+    leagueName: league.name,
+    testLog: buildTestLogForSync(),
+    questionLog: buildQuestionLogForSync()
   };
 }
 
@@ -7972,6 +7981,7 @@ function addDailyQuestions() {
   renderDailyQuestions();
   saveDailyQuestions();
   recordActivity();
+  syncLeaderboard();
   SFX.play('success');
 
   clearDailyQuestionForm();
@@ -8236,7 +8246,7 @@ function performUndo() {
     renderAchievements(); syncLeaderboard();
   } else if (type === 'dailyQuestion') {
     dailyQuestions.splice(index, 0, item);
-    renderDailyQuestions(); saveDailyQuestions();
+    renderDailyQuestions(); saveDailyQuestions(); syncLeaderboard();
   } else if (type === 'customTest') {
     customTests.splice(index, 0, item);
     renderCustomTests(); saveCustomTests();
@@ -8254,6 +8264,7 @@ function deleteDailyQuestion(index) {
   if (editingDailyQuestionIndex !== null) cancelEditDailyQuestion();
   renderDailyQuestions();
   saveDailyQuestions();
+  syncLeaderboard();
   SFX.play('delete');
   scheduleUndo('dailyQuestion', item, index, `Removed ${item.subject} log`);
 }
