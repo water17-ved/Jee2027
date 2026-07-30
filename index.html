@@ -1378,8 +1378,6 @@
   .login-modal-msg { font-size: 0.76rem; min-height: 16px; margin-top: 8px; }
   .login-modal-msg.error { color: var(--danger); }
   .login-modal-msg.ok { color: var(--chem); }
-  .login-modal-guest { text-align: center; margin-top: 10px; font-size: 0.76rem; }
-  .login-modal-guest a { color: var(--gold-bright); cursor: pointer; text-decoration: underline; }
 
   /* Account bar (replaces old plain Battle Tag input bar) */
   .account-bar {
@@ -1926,7 +1924,10 @@
   .analysis-weight-bars { max-height: 480px; overflow-y: auto; padding-right: 4px; }
 
   /* Chapter cards — replaces a wide table that overflowed on phone screens */
-  .analysis-chapter-list { display: flex; flex-direction: column; gap: 10px; }
+  .analysis-chapter-list { display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto; overflow-x: hidden; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--gold) transparent; }
+  .analysis-chapter-list::-webkit-scrollbar { width: 6px; }
+  .analysis-chapter-list::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+  .analysis-chapter-list::-webkit-scrollbar-track { background: transparent; }
   .analysis-chapter-card {
     border-left: 3px solid var(--border); border-radius: 8px; padding: 12px 14px;
     background: rgba(255,255,255,0.02);
@@ -2003,6 +2004,22 @@
   .rc-row { display: flex; gap: 6px; font-size: 0.74rem; line-height: 1.4; margin-top: 3px; }
   .rc-label { flex-shrink: 0; color: var(--text-muted); min-width: 74px; }
   .rc-value { color: var(--text-main); opacity: 0.9; }
+  .rc-cross-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .rc-cross-chip {
+    font-size: 0.68rem; padding: 3px 9px; border-radius: 999px; cursor: pointer;
+    background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.4); color: var(--text-main);
+    white-space: nowrap; transition: background 0.15s ease;
+  }
+  .rc-cross-chip:hover { background: rgba(124,58,237,0.25); }
+  .roadmap-chapter-card.rc-flash { animation: rcFlash 1.6s ease; }
+  @keyframes rcFlash {
+    0% { box-shadow: 0 0 0 2px rgba(124,58,237,0.9); }
+    100% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
+  }
+  .roadmap-cross-summary { margin-bottom: 18px; padding: 12px 14px; border-radius: 10px; background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.3); }
+  .roadmap-cross-summary-title { font-weight: 700; font-size: 0.85rem; color: var(--text-main); margin-bottom: 8px; }
+  .roadmap-cross-summary-pair { font-size: 0.75rem; line-height: 1.6; color: var(--text-muted); }
+  .roadmap-cross-summary-pair b { color: var(--text-main); font-weight: 600; }
 
   .analysis-pie-wrap { display: flex; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
   .analysis-pie-svg { width: 160px; height: 160px; flex-shrink: 0; overflow: visible; }
@@ -2411,14 +2428,19 @@
   }
 </style>
 <!-- Firebase (used only for: login accounts + the shared online leaderboard. All tracker
-     progress/tests/questions stay 100% local/offline via localStorage, untouched by this.) -->
-<script async src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script async src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script async src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+     progress/tests/questions stay 100% local/offline via localStorage, untouched by this.)
+     NOTE: deliberately NOT loaded with `async`. The main inline script further down runs
+     at parse time and calls firebase.initializeApp() immediately — with `async`, the browser
+     could reach that code before the SDK finished loading, `firebase` would be undefined,
+     and Google Sign-In would silently fail. Ordinary blocking scripts guarantee they're
+     ready first. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <!-- Secondary Firebase app (separate web-app registration in the same project, adds
      Analytics + Realtime Database). Kept isolated from the primary app above. -->
-<script async src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
-<script async src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -3358,7 +3380,7 @@
 
       <div class="manual-block">
         <h3>📊 Chapter Analysis (own tab)</h3>
-        <p>A dedicated tab — pick Physics, Chemistry, or Maths at the top (Physics shows by default) for a full chapter-by-chapter analysis: priority arrow, difficulty tag, estimated PYQ pool, weightage %, easy/medium/hard split, and a one-line strategic action plan per chapter, sorted highest-priority first. Below the chapter cards sits a weightage bar chart and a pie chart of chapter weightage, and a year-wise question distribution chart (all three subjects now have this) with a dropdown to isolate a single chapter's trend.</p>
+        <p>A dedicated tab — pick Physics, Chemistry, or Maths at the top (Physics shows by default) for a full chapter-by-chapter analysis: priority arrow, difficulty tag, estimated PYQ pool, weightage %, easy/medium/hard split, and a one-line strategic action plan per chapter, sorted highest-priority first. A weightage bar chart sits above the (scrollable) chapter cards, and below them is a year-wise question distribution chart (all three subjects now have this) with a dropdown to isolate a single chapter's trend.</p>
       </div>
 
       <div class="manual-block">
@@ -3469,7 +3491,7 @@
 
       <div class="manual-block">
         <h3>🌐 Leaderboard Tab</h3>
-        <p>Log in (or continue as guest) via the account bar at the top of the app to join the live, online leaderboard — everyone currently logged in is ranked by League (weekly XP tier) first, plus separate tables for average mock score and subject-wise syllabus completion. Your actual tracker data (checklists, tests, daily questions, coaching log) always stays local on your device — only your name, league, and score summary are shared.</p>
+        <p>Sign in with Google via the account bar at the top of the app to join the live, online leaderboard — everyone currently logged in is ranked by League (weekly XP tier) first, plus separate tables for average mock score and subject-wise syllabus completion. Your actual tracker data (checklists, tests, daily questions, coaching log) always stays local on your device — only your name, league, and score summary are shared.</p>
       </div>
     </div>
   </div>
@@ -3554,8 +3576,8 @@ const localDB = {
 //      this on (or localhost while testing) is listed, or the Google popup will fail.
 // Suggested Firestore rule so anyone can read the leaderboard but only write their own entry:
 //   match /leaderboard/{uid} { allow read: if true; allow write: if request.auth.uid == uid; }
-// Until you fill this in, the app runs fully in local mode: usernames, stats, and the
-// leaderboard table still work, but only show data from this device.
+// Google sign-in and the shared leaderboard require this to be filled in and working —
+// there is no local/offline fallback account mode.
 const firebaseConfig = {
   apiKey: "AIzaSyBVTq9-2RSBNFoA7PXiXzn9s5LmwxNuHpo",
   authDomain: "jee2027-9d55a.firebaseapp.com",
@@ -3626,9 +3648,8 @@ function loginMsg(text, ok) {
 }
 
 // Google sign-in — requires "Google" enabled under Firebase Authentication → Sign-in method.
-// If a Firebase project is configured (see firebaseConfig above), the account's display
-// name (or an optional custom name typed in the modal) is synced to a shared online leaderboard.
-// If not configured, everything still works locally on this device.
+// The account's display name (or an optional custom name typed in the modal) is synced to
+// the shared online leaderboard.
 async function doGoogleSignIn() {
   const customNameInput = document.getElementById('login-display-name');
   const customName = customNameInput ? customNameInput.value.trim() : '';
@@ -3637,29 +3658,23 @@ async function doGoogleSignIn() {
   playerStandard = stdSelect ? stdSelect.value : '';
   try { await localDB.set('jee-player-standard', JSON.stringify(playerStandard), false); } catch (e) { /* ignore */ }
 
-  if (FIREBASE_ENABLED) {
-    try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await fbAuth.signInWithPopup(provider);
-      const name = customName || result.user.displayName || 'Player';
-      if (customName && result.user.displayName !== customName) {
-        await result.user.updateProfile({ displayName: customName });
-      }
-      playerName = name;
-      try { await localDB.set('jee-player-name', JSON.stringify(name), false); } catch (e) { /* ignore */ }
-      loginMsg('Signed in ✓ Synced to live leaderboard', true);
-    } catch (e) {
-      loginMsg(e.message || 'Google sign-in failed', false);
-      return;
+  if (!FIREBASE_ENABLED) {
+    loginMsg('Google sign-in is unavailable right now — please try again in a moment.', false);
+    return;
+  }
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await fbAuth.signInWithPopup(provider);
+    const name = customName || result.user.displayName || 'Player';
+    if (customName && result.user.displayName !== customName) {
+      await result.user.updateProfile({ displayName: customName });
     }
-  } else {
-    // No Firebase configured — run in local-only mode so the feature still works.
-    const name = customName || 'Player';
     playerName = name;
     try { await localDB.set('jee-player-name', JSON.stringify(name), false); } catch (e) { /* ignore */ }
-    currentUser = { uid: 'local', displayName: name };
-    loginMsg('Name set ✓ (local mode — showing this device only)', true);
-    await syncLeaderboard();
+    loginMsg('Signed in ✓ Synced to live leaderboard', true);
+  } catch (e) {
+    loginMsg(e.message || 'Google sign-in failed', false);
+    return;
   }
   updateAccountBarUI();
   renderLeaderboard();
@@ -3685,7 +3700,7 @@ function updateAccountBarUI() {
   const toggleBox = document.getElementById('lb-visible-checkbox');
   if (!statusEl || !btn) return;
   if (currentUser) {
-    const modeSuffix = FIREBASE_ENABLED ? (lbVisible ? ' — synced to the live leaderboard' : ' — hidden from the leaderboard') : ' — local device only';
+    const modeSuffix = lbVisible ? ' — synced to the live leaderboard' : ' — hidden from the leaderboard';
     statusEl.textContent = `Playing as "${playerName || currentUser.displayName || 'Player'}"${modeSuffix}`;
     statusEl.classList.toggle('linked', lbVisible && FIREBASE_ENABLED);
     btn.textContent = 'Log Out';
@@ -3749,39 +3764,29 @@ function buildOwnStats() {
   };
 }
 
-// Push this player's current stats to the shared Firestore leaderboard doc (their own uid only),
-// or — if Firebase isn't configured — just keep it in the local-only leaderboardEntries array.
+// Push this player's current stats to the shared Firestore leaderboard doc (their own uid only).
 async function syncLeaderboard() {
   if (!currentUser) return;
   if (!lbVisible) return; // opted out — don't (re)appear on the leaderboard
+  if (!FIREBASE_ENABLED || !fbDb) return;
   const stats = buildOwnStats();
-  if (FIREBASE_ENABLED && fbDb && currentUser.uid !== 'local') {
-    try {
-      await fbDb.collection('leaderboard').doc(currentUser.uid).set(stats, { merge: true });
-    } catch (e) { console.error('Leaderboard sync error:', e); }
-  } else {
-    leaderboardEntries = [stats];
-    startLeaderboardListener();
-  }
+  try {
+    await fbDb.collection('leaderboard').doc(currentUser.uid).set(stats, { merge: true });
+  } catch (e) { console.error('Leaderboard sync error:', e); }
 }
 
 // Live listener — updates instantly as any logged-in player's stats change, no polling/refresh needed
 function startLeaderboardListener() {
   const dot = document.getElementById('lb-live-dot');
   const noteText = document.getElementById('lb-note-text');
-  if (FIREBASE_ENABLED && currentUser && currentUser.uid !== 'local') {
-    if (leaderboardUnsub) return;
-    if (dot) dot.style.display = 'inline-block';
-    if (noteText) noteText.textContent = 'Live — updates instantly as any logged-in player changes.';
-    leaderboardUnsub = fbDb.collection('leaderboard').onSnapshot(snap => {
-      leaderboardEntries = snap.docs.map(d => d.data());
-      renderLeaderboard();
-    }, err => console.error('Leaderboard listen error:', err));
-  } else if (currentUser) {
-    if (dot) dot.style.display = 'none';
-    if (noteText) noteText.textContent = 'Local mode — showing this device only. Set up Firebase (see code comment) for a shared leaderboard.';
+  if (!FIREBASE_ENABLED || !currentUser) return;
+  if (leaderboardUnsub) return;
+  if (dot) dot.style.display = 'inline-block';
+  if (noteText) noteText.textContent = 'Live — updates instantly as any logged-in player changes.';
+  leaderboardUnsub = fbDb.collection('leaderboard').onSnapshot(snap => {
+    leaderboardEntries = snap.docs.map(d => d.data());
     renderLeaderboard();
-  }
+  }, err => console.error('Leaderboard listen error:', err));
 }
 
 function stopLeaderboardListener() {
@@ -3814,12 +3819,6 @@ async function initAuthWatcher() {
       updateBattleTagStatus();
     });
   } else {
-    // No Firebase configured — restore local session directly from the saved username.
-    if (saved) {
-      currentUser = { uid: 'local', displayName: saved };
-      await syncLeaderboard();
-      startLeaderboardListener();
-    }
     updateAccountBarUI();
     updateBattleTagStatus();
   }
@@ -5717,6 +5716,46 @@ const ROADMAP_PHASES = [
   { name: 'Phase 3 — High-Yield Standalones', desc: 'Wrap up Modern Physics, Vectors/3D, Coordination Compounds, and Matrices/Determinants for fast scoring.' }
 ];
 
+// Cross-subject links: chapters whose concepts genuinely interlace across
+// Physics/Chemistry/Maths. Purely informational — surfaces "study these two
+// together" pairs that the single-subject view would otherwise hide.
+const ROADMAP_SUBJECT_LABEL = {
+  maths: '➗ Maths',
+  'chemistry-organic': '🧪 Organic',
+  'chemistry-inorganic': '🧪 Inorganic',
+  'chemistry-physical': '🧪 Physical',
+  physics: '⚛ Physics'
+};
+
+const ROADMAP_CROSS_LINKS = {
+  'Trigonometric Functions & Equations': [{ subject: 'physics', name: 'Kinematics (1D & 2D)' }],
+  'Vectors & 3D Geometry': [{ subject: 'physics', name: 'Mathematical Tools & Vectors' }],
+  'Limits, Continuity & Differentiability (LCD)': [{ subject: 'physics', name: 'Kinematics (1D & 2D)' }],
+  'Indefinite & Definite Integration': [{ subject: 'physics', name: 'Work, Energy & Power (WEP)' }],
+  'Differential Equations': [
+    { subject: 'physics', name: 'Simple Harmonic Motion (SHM)' },
+    { subject: 'physics', name: 'Electromagnetic Induction (EMI)' }
+  ],
+  'Complex Numbers': [{ subject: 'physics', name: 'Alternating Current (AC)' }],
+
+  'Atomic Structure': [{ subject: 'physics', name: 'Modern Physics & Nuclear Physics' }],
+  'Chemical Thermodynamics & Energetics': [{ subject: 'physics', name: 'Thermodynamics & KTG' }],
+  'Gaseous State': [{ subject: 'physics', name: 'Thermodynamics & KTG' }],
+  'Chemical Kinetics': [{ subject: 'maths', name: 'Limits, Continuity & Differentiability (LCD)' }],
+
+  'Mathematical Tools & Vectors': [
+    { subject: 'maths', name: 'Vectors & 3D Geometry' },
+    { subject: 'maths', name: 'Trigonometric Functions & Equations' }
+  ],
+  'Kinematics (1D & 2D)': [{ subject: 'maths', name: 'Limits, Continuity & Differentiability (LCD)' }],
+  'Work, Energy & Power (WEP)': [{ subject: 'maths', name: 'Indefinite & Definite Integration' }],
+  'Simple Harmonic Motion (SHM)': [{ subject: 'maths', name: 'Differential Equations' }],
+  'Electromagnetic Induction (EMI)': [{ subject: 'maths', name: 'Differential Equations' }],
+  'Alternating Current (AC)': [{ subject: 'maths', name: 'Complex Numbers' }],
+  'Thermodynamics & KTG': [{ subject: 'chemistry-physical', name: 'Chemical Thermodynamics & Energetics' }],
+  'Modern Physics & Nuclear Physics': [{ subject: 'chemistry-physical', name: 'Atomic Structure' }]
+};
+
 const PRIORITY_TIER = {
   'Foundation Block': { emoji: '🔴', color: 'var(--danger)' },
   'Bridge Block': { emoji: '🟡', color: 'var(--gold-bright)' },
@@ -5825,18 +5864,65 @@ function renderRoadmapDetail() {
   if (activeBtn) activeBtn.classList.add('subject-picker-active');
 
   const chapters = ROADMAP_DATA[selectedRoadmapSubject] || [];
-  el.innerHTML = chapters.map(c => {
+
+  const crossPairs = chapters
+    .filter(c => ROADMAP_CROSS_LINKS[c.name])
+    .flatMap(c => ROADMAP_CROSS_LINKS[c.name].map(x => ({ from: c.name, subject: x.subject, to: x.name })));
+  const crossSummaryHtml = crossPairs.length ? `
+    <div class="roadmap-cross-summary">
+      <div class="roadmap-cross-summary-title">🔗 Interlaced Chapters (study these together)</div>
+      ${crossPairs.map(p => `<div class="roadmap-cross-summary-pair">
+        <b>${p.from}</b> ↔ <b>${p.to}</b> <span style="opacity:0.7;">(${ROADMAP_SUBJECT_LABEL[p.subject] || p.subject})</span>
+        <span class="rc-cross-chip" style="margin-left:6px;" onclick="jumpToRoadmapChapter('${p.subject}', '${p.to.replace(/'/g, "\\'")}')">Jump →</span>
+      </div>`).join('')}
+    </div>` : '';
+
+  el.innerHTML = crossSummaryHtml + chapters.map(c => {
     const t = PRIORITY_TIER[c.tier] || PRIORITY_TIER['Bridge Block'];
+    const cross = ROADMAP_CROSS_LINKS[c.name] || [];
+    const crossHtml = cross.length ? `
+      <div class="rc-cross-row">
+        ${cross.map(x => `<span class="rc-cross-chip" title="Study alongside — shares concepts" onclick="jumpToRoadmapChapter('${x.subject}', '${x.name.replace(/'/g, "\\'")}')">🔗 ${ROADMAP_SUBJECT_LABEL[x.subject] || x.subject} — ${x.name}</span>`).join('')}
+      </div>` : '';
     return `
-    <div class="roadmap-chapter-card" style="border-left-color:${t.color};">
+    <div class="roadmap-chapter-card" id="roadmap-card-${selectedRoadmapSubject}-${c.name.replace(/[^a-zA-Z0-9]/g, '')}" style="border-left-color:${t.color};">
       <div class="rc-top-row">
         <span class="rc-name">${c.name}</span>
         <span class="rc-tier-tag" style="color:${t.color}; border-color:${t.color};">${t.emoji} ${c.tier}</span>
       </div>
       <div class="rc-row"><span class="rc-label">Needs first</span><span class="rc-value">${c.prereq}</span></div>
       <div class="rc-row"><span class="rc-label">Unlocks</span><span class="rc-value">${c.unlocks}</span></div>
+      ${crossHtml}
     </div>`;
   }).join('');
+}
+
+// Jump to a chapter's card, switching subject tab within the roadmap picker if needed.
+function jumpToRoadmapChapter(subjectKey, chapterName) {
+  HAPTICS.buzz('click');
+  const doScroll = () => {
+    const id = `roadmap-card-${subjectKey}-${chapterName.replace(/[^a-zA-Z0-9]/g, '')}`;
+    const card = document.getElementById(id);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('rc-flash');
+      HAPTICS.buzz('success');
+      setTimeout(() => card.classList.remove('rc-flash'), 1600);
+    } else {
+      // No card by that exact name — happens if a link points at a chapter that
+      // doesn't exist as its own roadmap entry (e.g. "Mechanics" is just an umbrella
+      // term in the Phase 1 description; the real cards are named Kinematics, NLM &
+      // Friction, WEP, etc.). Tell the user instead of jumping nowhere silently.
+      HAPTICS.buzz('error');
+      flashStatus(`Couldn't find a "${chapterName}" card in ${ROADMAP_SUBJECT_LABEL[subjectKey] || subjectKey} — it may be grouped under a broader chapter name.`, 4000);
+    }
+  };
+  if (selectedRoadmapSubject !== subjectKey) {
+    viewRoadmapSubject(subjectKey);
+    setTimeout(doScroll, 60);
+  } else {
+    doScroll();
+  }
 }
 
 function renderSubjectAnalysisDetail() {
@@ -5918,43 +6004,6 @@ function renderSubjectAnalysisDetail() {
         </div>`).join('')}
     </div>` : `<div class="trend-chart-empty">No weight data available for this subject's chapters.</div>`;
 
-  // ---- Pie chart: share of weight per chapter (interactive SVG — click a slice to see it + its neighbors) ----
-  const pieTotal = barRows.reduce((sum, r) => sum + r.value, 0);
-  let pieHtml = `<div class="trend-chart-empty">No weight data available to build a pie chart.</div>`;
-  let pieLegendHtml = '';
-  currentPieRows = [];
-  if (pieTotal > 0 && barRows.length) {
-    const palette = ['#ff6a00','#ffcf3d','#22d3ee','#39ff88','#c77dff','#ff3d7d','#ff1a5e','#7c3aed','#38bdf8','#86efac','#f5a623','#e5484d'];
-    currentPieRows = barRows.map((r, i) => ({ ...r, color: palette[i % palette.length], pct: (r.value / pieTotal) * 100 }));
-
-    const cx = 100, cy = 100, radius = 92;
-    const polar = (angleDeg) => {
-      const rad = (angleDeg - 90) * Math.PI / 180;
-      return [cx + radius * Math.cos(rad), cy + radius * Math.sin(rad)];
-    };
-    let angleAcc = 0;
-    const slicePaths = currentPieRows.map((r, i) => {
-      const startAngle = angleAcc;
-      angleAcc += (r.pct / 100) * 360;
-      const endAngle = angleAcc;
-      const [x1, y1] = polar(startAngle);
-      const [x2, y2] = polar(endAngle);
-      const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
-      const d = `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${radius} ${radius} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
-      return `<path d="${d}" fill="${r.color}" class="pie-slice" onclick="showPieSliceInfo(${i})"><title>${r.name} — ${Math.round(r.pct)}%</title></path>`;
-    }).join('');
-
-    pieHtml = `
-      <svg viewBox="0 0 200 200" class="analysis-pie-svg">${slicePaths}</svg>
-      <div id="pie-slice-info" class="pie-slice-info">
-        <div class="pie-slice-info-hint">Tap a slice to see that chapter and its neighbors here.</div>
-      </div>`;
-    pieLegendHtml = `<div class="analysis-pie-legend">
-      ${currentPieRows.slice(0, 12).map((r, i) => `<div class="pie-legend-item" onclick="showPieSliceInfo(${i})"><i class="pie-legend-dot" style="background:${r.color};"></i>${r.name} — ${Math.round(r.pct)}%</div>`).join('')}
-      ${currentPieRows.length > 12 ? `<div class="pie-legend-item" style="opacity:0.6;">+ ${currentPieRows.length - 12} more</div>` : ''}
-    </div>`;
-  }
-
   // ---- Year-wise distribution (only where yearWise data exists) ----
   const chaptersWithYearData = rows.filter(r => r.a.yearWise);
   let yearSectionHtml = '';
@@ -5999,20 +6048,12 @@ function renderSubjectAnalysisDetail() {
         ? ` <strong>${missing} chapter${missing === 1 ? '' : 's'} not shown</strong> — ${missingChapters.map(c => c.name).join(', ')} — not part of the JEE Advanced syllabus (Main-only topic${missing === 1 ? '' : 's'}).`
         : ` (${missing} chapter${missing === 1 ? '' : 's'} not covered by the source data.)`) : ''}</p>
 
-    <div class="analysis-chapter-list">${chapterCardsHtml}</div>
-
-    <div class="analysis-section-block">
+    <div class="analysis-section-block" style="margin-top:0; padding-top:0; border-top:none;">
       <div class="mock-section-title">📶 Chapter Weight — Bar View</div>
       ${barChartHtml}
     </div>
 
-    <div class="analysis-section-block">
-      <div class="mock-section-title">🥧 Chapter Weight — Pie View</div>
-      <div class="analysis-pie-wrap">
-        ${pieHtml}
-        ${pieLegendHtml}
-      </div>
-    </div>
+    <div class="analysis-chapter-list">${chapterCardsHtml}</div>
 
     <div class="analysis-section-block">
       ${yearSectionHtml}
@@ -7715,9 +7756,7 @@ function renderLeaderboard() {
   }
   const entries = [...byName.values()];
   if (!entries.length) {
-    const msg = FIREBASE_ENABLED
-      ? '<tr><td colspan="6" class="lb-empty">No one online yet — invite your friends to join too!</td></tr>'
-      : '<tr><td colspan="6" class="lb-empty">Local mode — your stats will appear here once loaded.</td></tr>';
+    const msg = '<tr><td colspan="6" class="lb-empty">No one online yet — invite your friends to join too!</td></tr>';
     leagueBody.innerHTML = msg; overallBody.innerHTML = msg; subjectBody.innerHTML = msg;
     return;
   }
