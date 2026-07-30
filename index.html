@@ -3511,7 +3511,7 @@
       <div class="settings-group-box">
         <div class="log-section">
           <h2>🧭 Navigation Bar Position</h2>
-          <p style="font-size:0.83rem; color: var(--text-muted); margin-bottom:16px;">The bottom navigation bar starts locked in place so it can't be moved by accident. Unlock it to drag it anywhere on screen by its top grip (⠿⠿) — handy if it ever overlaps content on an unusual screen size or in landscape — then lock it again once you've found a good spot. Reset returns it to the default bottom-center position.</p>
+          <p style="font-size:0.83rem; color: var(--text-muted); margin-bottom:16px;">The bottom navigation bar starts locked in place so it can't be moved by accident. Unlock it to drag it anywhere on screen by its top grip (⠿⠿) — handy if it ever overlaps content on an unusual screen size or in landscape. It always starts fresh at the default bottom-center position each time you open the app; a drag only repositions it for the current session. Your lock preference (on/off) is what's remembered.</p>
           <div class="util-bar">
             <button class="util-btn util-btn-danger" id="settings-nav-lock-btn" onclick="toggleNavLock(event)">🔒 Position: Locked</button>
             <button class="util-btn" onclick="resetNavPosition(event)">⟲ Reset Position</button>
@@ -3639,7 +3639,7 @@
 
       <div class="manual-block">
         <h3>🧭 Moving the Navigation Bar</h3>
-        <p>The bottom navigation bar starts <strong>locked in place</strong> so it can't be moved by accident. To reposition it, go to <strong>Settings → 🎨 Customization → 🧭 Navigation Bar Position</strong> and unlock it — then grab the small dotted strip (⠿⠿) along its top edge and drag it anywhere on screen (handy if it ever overlaps content on an unusual screen size or in landscape). Lock it again once you've found a good spot; its position is remembered next time you open the app. You can also reset it back to the default from that same Settings screen.</p>
+        <p>The bottom navigation bar starts <strong>locked in place</strong> so it can't be moved by accident. To reposition it, go to <strong>Settings → 🎨 Customization → 🧭 Navigation Bar Position</strong> and unlock it — then grab the small dotted strip (⠿⠿) along its top edge and drag it anywhere on screen (handy if it ever overlaps content on an unusual screen size or in landscape). It always resets to the default bottom-center spot the next time you open the app — a drag only moves it for your current session. Your lock preference (on/off) is what carries over.</p>
       </div>
 
       <div class="manual-block">
@@ -6888,13 +6888,12 @@ function initNavDrag() {
   const handle = document.getElementById('nav-drag-handle');
   if (!nav || !handle) return;
 
+  // Position is intentionally NOT restored here — the nav bar always starts at its
+  // default spot when the site opens, every time. Only the lock preference persists.
   loadKey(NAV_POS_KEY).then(saved => {
     // Locked by default until the user explicitly unlocks it from Settings — once they
     // do, their choice (locked or unlocked) is what gets remembered from then on.
     navLocked = saved ? !!saved.locked : true;
-    if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
-      applyNavPosition(clampNavX(saved.x, nav), clampNavY(saved.y, nav));
-    }
     updateNavLockUI();
   });
 
@@ -6926,9 +6925,8 @@ function onNavDragEnd() {
   document.removeEventListener('pointerup', onNavDragEnd);
   const nav = document.getElementById('bottom-nav');
   nav.classList.remove('nav-dragging');
-  if (!navDragState) return;
-  const rect = nav.getBoundingClientRect();
-  saveNavPosition(rect.left, rect.top);
+  // Dragging repositions it for the rest of THIS session only — no position is saved,
+  // so the next time the site opens it's back at the default spot.
   navDragState = null;
 }
 
@@ -6942,29 +6940,24 @@ function applyNavPosition(x, y) {
   nav.style.top = y + 'px';
 }
 
-async function saveNavPosition(x, y) {
-  try { await localDB.set(NAV_POS_KEY, JSON.stringify({ x, y, locked: navLocked }), false); } catch (e) {}
+async function saveNavLockPref() {
+  try { await localDB.set(NAV_POS_KEY, JSON.stringify({ locked: navLocked }), false); } catch (e) {}
 }
 
 // If the screen resizes/rotates after a manual drag, keep the bar on-screen rather
-// than letting it drift off the edge of a now-smaller viewport.
+// than letting it drift off the edge of a now-smaller viewport (session-only, not saved).
 function reclampNavPosition() {
   const nav = document.getElementById('bottom-nav');
   if (!nav || !nav.classList.contains('nav-repositioned')) return;
   const rect = nav.getBoundingClientRect();
-  const x = clampNavX(rect.left, nav);
-  const y = clampNavY(rect.top, nav);
-  applyNavPosition(x, y);
-  saveNavPosition(x, y);
+  applyNavPosition(clampNavX(rect.left, nav), clampNavY(rect.top, nav));
 }
 
 function toggleNavLock(e) {
   if (e) e.stopPropagation();
   navLocked = !navLocked;
   updateNavLockUI();
-  const nav = document.getElementById('bottom-nav');
-  const rect = nav.getBoundingClientRect();
-  saveNavPosition(rect.left, rect.top);
+  saveNavLockPref();
   SFX.play('click');
 }
 
@@ -6986,7 +6979,7 @@ function resetNavPosition(e) {
   nav.style.left = ''; nav.style.top = '';
   navLocked = true; // matches the locked-by-default state a fresh load would show
   updateNavLockUI();
-  try { localDB.set(NAV_POS_KEY, JSON.stringify(null), false); } catch (err) {}
+  saveNavLockPref();
   SFX.play('click');
 }
 
