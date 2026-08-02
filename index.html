@@ -1246,6 +1246,37 @@
     opacity: 0.35; cursor: not-allowed; box-shadow: none;
   }
 
+  /* ---- Inline form help (?) buttons + shared popup ---- */
+  .log-section h2 { display: flex; align-items: center; gap: 8px; }
+  .form-help-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(255,255,255,0.08); border: 1px solid var(--border);
+    color: var(--text-muted); font-family: var(--font-body); font-size: 0.72rem; font-weight: 700;
+    cursor: pointer; line-height: 1; padding: 0; transition: background 0.15s ease, color 0.15s ease;
+  }
+  .form-help-btn:hover, .form-help-btn:active { background: var(--gold); color: #1a0f0a; border-color: var(--gold); }
+  .form-help-overlay {
+    position: fixed; inset: 0; background: rgba(3,3,9,0.72); backdrop-filter: blur(2px);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease; z-index: 240;
+  }
+  .form-help-overlay.open { opacity: 1; pointer-events: auto; }
+  .form-help-modal {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -48%) scale(0.96);
+    width: 380px; max-width: 88vw; max-height: 76vh; overflow-y: auto;
+    background: linear-gradient(160deg, var(--panel-bg), #060a12);
+    border: 1px solid var(--gold); border-radius: 14px; padding: 20px 20px 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 250;
+  }
+  .form-help-modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+  .form-help-modal h2 { margin: 0 0 10px 0; font-family: var(--font-display); font-size: 0.98rem; color: var(--gold); }
+  .form-help-modal .fh-field { margin: 0 0 10px 0; font-size: 0.82rem; line-height: 1.5; color: var(--text-main); }
+  .form-help-modal .fh-field strong { color: var(--gold-bright); }
+  .form-help-modal .fh-tip { font-size: 0.78rem; color: var(--text-muted); margin: 12px 0 14px 0; line-height: 1.5; border-top: 1px solid var(--border); padding-top: 10px; }
+  .form-help-modal .add-btn { width: 100%; }
+
   /* ---- Onboarding tour: full-screen, tap-anywhere-to-advance welcome ---- */
   @keyframes onbDrift {
     0%   { transform: translate(0, 0) rotate(0deg); }
@@ -1484,6 +1515,15 @@
   /* Practice — sword: gentle idle sway, slash swipe on activation */
   .bn-icon .icon-sword { transform-origin: 50% 85%; animation: swordIdle 3.4s ease-in-out infinite; }
   @keyframes swordIdle { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+  .bottom-nav-btn[data-cat="track"].bn-pop .icon-target .target-ring1 { animation: targetPulse 0.45s ease-out; }
+  .bottom-nav-btn[data-cat="track"].bn-pop .icon-target .target-ring2 { animation: targetPulse 0.45s ease-out 0.06s; }
+  .bottom-nav-btn[data-cat="track"].bn-pop .icon-target .target-dot { animation: targetPulse 0.45s ease-out 0.12s; }
+  @keyframes targetPulse {
+    0% { transform: scale(0.7); opacity: 0.4; }
+    60% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
   .bottom-nav-btn[data-cat="practice"].bn-pop .icon-sword { animation: swordSlash 0.45s cubic-bezier(.2,.8,.3,1); }
   @keyframes swordSlash {
     0%   { transform: rotate(-50deg) scale(0.9); opacity: 0.4; }
@@ -1525,7 +1565,8 @@
   @media (prefers-reduced-motion: reduce) {
     .bn-icon .icon-sword, .icon-users, .icon-gear,
     .bottom-nav-btn.bn-pop .icon-sword, .bottom-nav-btn.bn-pop .icon-chart .bar,
-    .bottom-nav-btn.bn-pop .icon-users, .bottom-nav-btn.bn-pop .icon-users .user2-head, .bottom-nav-btn.bn-pop .icon-gear {
+    .bottom-nav-btn.bn-pop .icon-users, .bottom-nav-btn.bn-pop .icon-users .user2-head, .bottom-nav-btn.bn-pop .icon-gear,
+    .bottom-nav-btn.bn-pop .icon-target .target-ring1, .bottom-nav-btn.bn-pop .icon-target .target-ring2, .bottom-nav-btn.bn-pop .icon-target .target-dot {
       animation: none !important;
     }
   }
@@ -1799,6 +1840,61 @@
   .settings-group-box .log-section { margin-bottom: 16px; }
   .settings-group-box .log-section:last-child { margin-bottom: 4px; }
 
+  .qbreak-card { margin-top: 18px; }
+  .qbreak-card summary { cursor: pointer; font-size: 0.88rem; font-weight: 700; color: var(--gold-bright); list-style: none; display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+  .qbreak-card summary::-webkit-details-marker { display: none; }
+  .qbreak-card summary::before { content: '▸'; transition: transform 0.2s ease; }
+  .qbreak-card[open] summary::before { transform: rotate(90deg); }
+  .marks-summary-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+  .marks-chip {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 10px; font-size: 0.78rem; color: var(--text-muted);
+  }
+  .marks-chip strong { color: var(--text-main); font-size: 0.9rem; }
+  .marks-chip.marks-overall { border-color: var(--gold); }
+  .marks-chip.marks-overall strong { color: var(--gold-bright); }
+  .marks-scheme-note { font-size: 0.7rem; color: var(--text-muted); margin: -6px 0 10px 0; }
+
+  .qbreak-legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 8px 0 10px 0; font-size: 0.72rem; color: var(--text-muted); }
+  .qbreak-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .qbreak-tab-btn {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 999px; color: var(--text-muted);
+    font-size: 0.74rem; font-weight: 600; padding: 5px 12px; cursor: pointer;
+  }
+  .qbreak-tab-btn.active { border-color: var(--gold); color: var(--gold-bright); background: rgba(255,106,0,0.12); }
+  .qbreak-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+  .qbreak-legend .qb-dot-correct { background: var(--chem); }
+  .qbreak-legend .qb-dot-wrong { background: var(--danger); }
+  .qbreak-legend .qb-dot-unattempted { background: var(--locked); border: 1px solid var(--border); }
+  .qbreak-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 5px; margin-bottom: 12px; }
+  .qbreak-box {
+    aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    font-size: 0.68rem; font-weight: 700; cursor: pointer; color: #0a0710; border: 2px solid transparent;
+    font-family: var(--font-accent);
+  }
+  .qbreak-box.qb-correct { background: var(--chem); }
+  .qbreak-box.qb-wrong { background: var(--danger); color: #fff; }
+  .qbreak-box.qb-unattempted { background: var(--locked); color: var(--text-muted); border: 1px solid var(--border); }
+  .qbreak-box.qb-tagged { border-color: var(--gold-bright); box-shadow: 0 0 0 1px var(--gold-bright); }
+  .qbreak-box.qb-selected { transform: scale(1.15); box-shadow: 0 0 0 2px var(--gold-bright); }
+  .qbreak-detail-panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+  .qbreak-detail-top { display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; margin-bottom: 8px; }
+  .qbreak-detail-top .qbreak-tag-pill { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--gold-bright); background: rgba(255,106,0,0.12); }
+  .qbreak-tag-panel { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .paste-results-box { background: var(--panel-bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
+  .paste-results-box summary { cursor: pointer; font-size: 0.82rem; font-weight: 700; color: var(--gold-bright); list-style: none; display: flex; align-items: center; gap: 6px; }
+  .paste-results-box summary::-webkit-details-marker { display: none; }
+  .paste-results-box summary::before { content: '▸'; transition: transform 0.2s ease; }
+  .paste-results-box[open] summary::before { transform: rotate(90deg); }
+  .paste-results-box .paste-hint { font-size: 0.72rem; color: var(--text-muted); margin: 6px 0 8px 0; line-height: 1.4; }
+  .paste-results-box textarea {
+    width: 100%; min-height: 110px; resize: vertical; background: var(--card-bg); color: var(--text-main);
+    border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-family: var(--font-body);
+    font-size: 0.82rem; box-sizing: border-box; margin-bottom: 8px;
+  }
+  .paste-results-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .paste-results-row select { flex: 1; min-width: 140px; }
   .mock-subject-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
   .mock-subject-row {
     display: grid; grid-template-columns: 100px repeat(2, 1fr); gap: 8px; align-items: center;
@@ -1815,6 +1911,32 @@
   @media (max-width: 480px) {
     .mock-subject-row { grid-template-columns: 1fr 1fr; }
     .mock-subject-row-label { grid-column: 1 / -1; }
+  }
+  .cx-sections { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 10px 0; }
+  .cx-section-row {
+    display: grid; grid-template-columns: 1.6fr 0.7fr 0.8fr 0.8fr auto; gap: 6px; align-items: center;
+    background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; padding: 8px;
+  }
+  .cx-section-row input {
+    background: #040609; border: 1px solid var(--border); color: var(--text-main);
+    padding: 7px 8px; border-radius: 6px; font-size: 0.8rem; width: 100%;
+  }
+  .cx-section-row .cx-sec-remove {
+    background: none; border: 1px solid var(--danger); color: var(--danger); border-radius: 6px;
+    cursor: pointer; padding: 6px 9px; font-size: 0.75rem; flex-shrink: 0;
+  }
+  .cx-section-row .cx-sec-remove:hover { background: var(--danger); color: white; }
+  .cx-section-row .cx-sec-remove:disabled { opacity: 0.3; cursor: not-allowed; }
+  .cx-add-section-btn { font-size: 0.78rem; padding: 7px 12px !important; }
+  .cx-total-preview { font-size: 0.78rem; color: var(--text-muted); margin: -4px 0 10px 0; }
+  .cx-total-preview strong { color: var(--gold-bright); }
+  .cx-breakdown-row td { background: rgba(255,255,255,0.02); padding: 8px 10px !important; }
+  .cx-breakdown-list { display: flex; flex-direction: column; gap: 3px; font-size: 0.76rem; color: var(--text-muted); }
+  .cx-breakdown-list span strong { color: var(--text-main); }
+  .cx-toggle-breakdown { background: none; border: none; color: var(--gold-bright); cursor: pointer; font-size: 0.72rem; padding: 0; text-decoration: underline; }
+  @media (max-width: 480px) {
+    .cx-section-row { grid-template-columns: 1fr 1fr; }
+    .cx-section-row input:first-child { grid-column: 1 / -1; }
   }
   .add-form input, .add-form select {
     background: #040609; border: 1px solid var(--border); color: var(--text-main);
@@ -1845,6 +1967,31 @@
     table.test-table tbody tr:not(.empty-row):hover td { background: rgba(255,255,255,0.03); }
   }
   .del-btn { background: none; border: 1px solid var(--danger); color: var(--danger); border-radius: 6px; cursor: pointer; padding: 4px 8px; font-size: 0.75rem; }
+  .revised-toggle-btn {
+    border-radius: 999px; cursor: pointer; padding: 4px 10px; font-size: 0.7rem; font-weight: 700;
+    white-space: nowrap; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-muted);
+  }
+  .revised-toggle-btn.revised-yes { border-color: var(--chem); color: var(--chem); background: rgba(57,255,136,0.1); }
+  .revised-toggle-btn.revised-no:hover { border-color: var(--gold); color: var(--gold-bright); }
+
+  .revision-check-bar {
+    background: var(--panel-bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; margin-bottom: 14px;
+  }
+  .revision-check-bar .rcb-title { font-size: 0.85rem; font-weight: 700; color: var(--gold-bright); margin-bottom: 4px; }
+  .revision-check-bar .rcb-sub { font-size: 0.76rem; color: var(--text-muted); margin-bottom: 10px; }
+  .rcb-chip-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .rcb-chip {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 999px;
+    padding: 5px 10px; font-size: 0.72rem; color: var(--text-main); display: flex; align-items: center; gap: 6px;
+  }
+  .rcb-chip button {
+    background: none; border: 1px solid var(--gold); color: var(--gold-bright); border-radius: 999px;
+    font-size: 0.66rem; padding: 2px 8px; cursor: pointer; font-weight: 700;
+  }
+  .revision-check-bar.rcb-clear { display: flex; align-items: center; gap: 8px; }
+  .revision-check-bar.rcb-clear .rcb-title { margin-bottom: 0; }
+
   .edit-btn { background: none; border: 1px solid var(--phys); color: var(--phys); border-radius: 6px; cursor: pointer; padding: 4px 8px; font-size: 0.75rem; margin-right: 4px; }
   .del-btn:hover { background: var(--danger); color: white; }
   .empty-row td { color: var(--text-muted); text-align: center; padding: 14px; }
@@ -2734,6 +2881,13 @@
   <button class="util-btn util-btn-cyan splash-efficient-toggle" id="splash-efficient-toggle-btn" onclick="toggleEfficientMode()">⚡ Efficient Mode: Off</button>
 </div>
 
+<div class="form-help-overlay" id="form-help-overlay" onclick="closeFormHelp()"></div>
+<div class="form-help-modal" id="form-help-modal">
+  <h2 id="form-help-title">Help</h2>
+  <div id="form-help-body"></div>
+  <button class="add-btn" onclick="closeFormHelp()">Got it</button>
+</div>
+
 <div class="reset-modal-overlay" id="reset-modal-overlay" onclick="closeResetModal()"></div>
 <div class="reset-modal" id="reset-modal">
   <h2>🗑 Reset All Data</h2>
@@ -2898,7 +3052,7 @@
 
   <div id="daily" class="tab-content active">
     <div class="log-section">
-      <h2>📝 Daily Questions Log</h2>
+      <h2>📝 Daily Questions Log <button type="button" class="form-help-btn" onclick="showFormHelp('dq')" aria-label="Help">?</button></h2>
       <p style="font-size:0.78rem; margin: -6px 0 12px 0; color: var(--text-muted);">Log what you drilled today — subject, difficulty, how many questions, and which exam it was for.</p>
       <div class="add-form">
         <select id="dq-subject">
@@ -2926,7 +3080,7 @@
       <div class="daily-summary" id="daily-summary"></div>
       <div class="table-scroll"><table class="test-table">
         <thead>
-          <tr><th>Date</th><th>Subject</th><th>Level</th><th>Qs</th><th>Time</th><th>Exam</th><th>Note</th><th></th></tr>
+          <tr><th>Date</th><th>Subject</th><th>Level</th><th>Qs</th><th>Time</th><th>Exam</th><th>Revised</th><th>Note</th><th></th></tr>
         </thead>
         <tbody id="daily-questions-body"></tbody>
       </table></div>
@@ -2938,7 +3092,7 @@
     </div>
 
     <div class="log-section">
-      <h2>📚 Study Hours (Today)</h2>
+      <h2>📚 Study Hours (Today) <button type="button" class="form-help-btn" onclick="showFormHelp('sh')" aria-label="Help">?</button></h2>
       <p style="font-size:0.78rem; margin: -6px 0 12px 0; color: var(--text-muted);">Total self-study hours per subject today — updates the Weekly Report's average. Saving again today overwrites today's entry, it doesn't add a duplicate.</p>
       <div class="add-form">
         <input id="sh-phy" type="number" step="0.1" min="0" placeholder="Physics (hrs)">
@@ -2952,7 +3106,7 @@
 
   <div id="schedule" class="tab-content">
     <div class="log-section">
-      <h2>📅 Daily Schedule</h2>
+      <h2>📅 Daily Schedule <button type="button" class="form-help-btn" onclick="showFormHelp('sc')" aria-label="Help">?</button></h2>
       <p style="font-size:0.78rem; margin: -6px 0 12px 0; color: var(--text-muted);">Build your own daily timetable — add up to 3 blocks at once below, in any order. Leave a block's name empty to skip it. Fully custom: time, label, subject tag and notes are all yours to set.</p>
       <div class="add-form" id="sc-row-1">
         <input id="sc-time-1" type="time">
@@ -3003,7 +3157,7 @@
     </div>
 
     <div class="log-section">
-      <h2>🎯 Daily Targets</h2>
+      <h2>🎯 Daily Targets <button type="button" class="form-help-btn" onclick="showFormHelp('tg')" aria-label="Help">?</button></h2>
       <p style="font-size:0.78rem; margin: -6px 0 12px 0; color: var(--text-muted);">Set your own daily goals — a question count, hours to study, chapters to finish, anything. Progress resets fresh every day; the target itself stays until you edit or remove it. Tick "All subjects" below to create the same target for Physics, Chemistry &amp; Maths in one go, each tracked separately.</p>
       <div class="add-form">
         <input id="tg-label" placeholder="Target name (e.g. Solve Qs)">
@@ -3122,7 +3276,7 @@
 
       <div id="advanced-tests" class="adv-subject-content">
         <div class="log-section">
-          <h2>🎯 Advanced Chapter Test Log</h2>
+          <h2>🎯 Advanced Chapter Test Log <button type="button" class="form-help-btn" onclick="showFormHelp('act')" aria-label="Help">?</button></h2>
           <div class="add-form">
             <select id="act-subject">
               <option>Physics</option>
@@ -3151,7 +3305,7 @@
         </div>
 
         <div class="log-section">
-          <h2>🎯 Advanced Full Mock Log</h2>
+          <h2>🎯 Advanced Full Mock Log <button type="button" class="form-help-btn" onclick="showFormHelp('amt')" aria-label="Help">?</button></h2>
           <div class="add-form">
             <input id="amt-name" placeholder="Test Name">
             <input id="amt-date" type="date">
@@ -3182,7 +3336,15 @@
     </div>
 
     <div class="log-section">
-      <h2>🔫 Chapter Skirmish Log</h2>
+      <h2>🔫 Chapter Skirmish Log <button type="button" class="form-help-btn" onclick="showFormHelp('ct')" aria-label="Help">?</button></h2>
+      <details class="paste-results-box">
+        <summary>📋 Paste Results (fill Qs / My Score automatically)</summary>
+        <p class="paste-hint">Paste your answer-sheet rows (Q# Key Stu Pts Poss — one per line). No. of Qs and My Score below get filled in for you.</p>
+        <textarea id="ct-paste-input" placeholder="1  A  B  -1.0  4.0&#10;2  A  A  4.0  4.0&#10;..."></textarea>
+        <div class="paste-results-row">
+          <button class="add-btn" type="button" onclick="applyPastedChapterTestResults()">Fill from Paste</button>
+        </div>
+      </details>
       <div class="add-form">
         <select id="ct-subject">
           <option>Physics</option>
@@ -3221,13 +3383,27 @@
     </div>
 
     <div class="log-section">
-      <h2>💀 Final Zone Log (Full Syllabus Mocks, 75 Qs)</h2>
+      <h2>💀 Final Zone Log (Full Syllabus Mocks, 75 Qs) <button type="button" class="form-help-btn" onclick="showFormHelp('mt')" aria-label="Help">?</button></h2>
       <p style="font-size:0.78rem; margin: -6px 0 12px 0; color: var(--text-muted);">Just enter Attempted and Correct per subject — score and negative marks are calculated automatically (standard +4 per correct, −1 per wrong, 25 Qs per subject). Nothing to add up yourself.</p>
       <div class="add-form">
         <input id="mt-name" placeholder="Test Name">
         <input id="mt-topics" placeholder="Topics Covered (comma separated)">
         <input id="mt-date" type="date">
       </div>
+      <details class="paste-results-box">
+        <summary>📋 Paste Results (fill Attempted/Correct automatically)</summary>
+        <p class="paste-hint">Paste your answer-sheet rows (Q# Key Stu Pts Poss — one per line). Choose "Auto-split" and paste all 75 (25 Physics, then 25 Chemistry, then 25 Maths), or paste just one subject's rows and pick that subject below.</p>
+        <textarea id="mt-paste-input" placeholder="1  A  B  -1.0  4.0&#10;2  A  A  4.0  4.0&#10;..."></textarea>
+        <div class="paste-results-row">
+          <select id="mt-paste-target">
+            <option value="auto">Auto-split (75 Qs = 25/25/25)</option>
+            <option value="phy">Physics only</option>
+            <option value="chem">Chemistry only</option>
+            <option value="maths">Maths only</option>
+          </select>
+          <button class="add-btn" type="button" onclick="applyPastedMajorTestResults()">Fill from Paste</button>
+        </div>
+      </details>
       <div class="mock-subject-rows">
         <div class="mock-subject-row">
           <span class="mock-subject-row-label phys-label">⚛ Physics</span>
@@ -3274,28 +3450,33 @@
     </div>
 
     <div class="log-section">
-      <h2>🧩 Custom Test Log</h2>
-      <p style="font-size:0.78rem; margin: 0 0 12px 0; color: var(--text-muted);">For anything that doesn't fit the two logs above — previous year papers, speed drills, subject-specific mocks, whatever you're actually using. Name the category yourself.</p>
+      <h2>🧩 Custom Test Log <button type="button" class="form-help-btn" onclick="showFormHelp('cx')" aria-label="Help">?</button></h2>
+      <p style="font-size:0.78rem; margin: 0 0 12px 0; color: var(--text-muted);">For anything that doesn't fit the two logs above — previous year papers, speed drills, subject-specific mocks, whatever you're actually using. Build it out of as many sections as you want, each with its own name, questions and score.</p>
+      <details class="paste-results-box">
+        <summary>📋 Paste Results (fill one section's Qs / Score / Max automatically)</summary>
+        <p class="paste-hint">Paste your answer-sheet rows (Q# Key Stu Pts Poss — one per line). Pick which section to fill below.</p>
+        <textarea id="cx-paste-input" placeholder="1  A  B  -1.0  4.0&#10;2  A  A  4.0  4.0&#10;..."></textarea>
+        <div class="paste-results-row">
+          <select id="cx-paste-target"></select>
+          <button class="add-btn" type="button" onclick="applyPastedCustomTestResults()">Fill from Paste</button>
+        </div>
+      </details>
       <div class="add-form">
         <input id="cx-category" placeholder="Test Category (e.g. PYQ Paper)">
         <input id="cx-name" placeholder="Test Name">
-        <select id="cx-subject">
-          <option>Mixed</option>
-          <option>Physics</option>
-          <option>Chemistry</option>
-          <option>Maths</option>
-        </select>
         <input id="cx-date" type="date">
-        <input id="cx-questions" type="number" placeholder="Total Qs" min="0">
-        <input id="cx-scored" type="number" placeholder="Marks / Score I Got">
-        <input id="cx-maxmarks" type="number" placeholder="Max Possible Score">
         <input id="cx-time" type="number" placeholder="Time Taken (min, optional)" min="0">
+      </div>
+      <div class="cx-sections" id="cx-sections"></div>
+      <button class="add-btn cx-add-section-btn" type="button" onclick="addCxSectionRow()">+ Add Section</button>
+      <p class="cx-total-preview" id="cx-total-preview"></p>
+      <div class="add-form" style="margin-top:10px;">
         <input id="cx-note" placeholder="Note">
         <button class="add-btn" id="cx-submit-btn" onclick="addCustomTest()">+ Add Test</button>
       </div>
       <div class="table-scroll"><table class="test-table">
         <thead>
-          <tr><th>Category</th><th>Test</th><th>Subject</th><th>Date</th><th>Score</th><th>%</th><th>Note</th><th></th></tr>
+          <tr><th>Category</th><th>Test</th><th>Sections</th><th>Date</th><th>Score</th><th>%</th><th>Note</th><th></th></tr>
         </thead>
         <tbody id="custom-test-body"></tbody>
       </table></div>
@@ -3304,7 +3485,7 @@
 
   <div id="coaching" class="tab-content">
     <div class="levelup-guide">
-      <h2>📘 What Got Taught Today</h2>
+      <h2>📘 What Got Taught Today <button type="button" class="form-help-btn" onclick="showFormHelp('cl')" aria-label="Help">?</button></h2>
       <p style="font-size:0.8rem; margin: -6px 0 12px 0; color: var(--text-muted);">Log what your coaching covered and any homework given. Turn on Reminders (Data tab) and this app will notify you at your chosen reminder time if homework's still pending, and later to revise what was taught.</p>
       <div class="add-form">
         <input id="cl-date" type="date">
@@ -3325,7 +3506,8 @@
   <div id="league" class="tab-content">
     <div class="levelup-guide">
       <h2>🏅 League Progress (This Week)</h2>
-      <p style="font-size:0.8rem; margin: -6px 0 12px 0; color: var(--text-muted);">Based on how many Daily Qs you log this week, you'll land in a league. XP here comes purely from your Daily Questions entries — 10 XP per question solved.</p>
+      <p style="font-size:0.8rem; margin: -6px 0 12px 0; color: var(--text-muted);">Based on how many Daily Qs you log this week, you'll land in a league — 10 XP per question solved, plus a +5 XP/question bonus once you confirm you've actually revised them.</p>
+      <div id="revision-check-bar"></div>
       <div class="league-current-banner" id="league-current-banner"></div>
       <div class="league-progress-track" id="league-progress-track"></div>
       <div class="league-sub-note" id="league-sub-note"></div>
@@ -3483,7 +3665,7 @@
       <h2>🎯 Archived Custom Tests</h2>
       <p style="font-size:0.78rem; margin: -6px 0 12px 0; color: var(--text-muted);">Entries older than 7 days from the Custom Tests log.</p>
       <div class="table-scroll"><table class="test-table">
-        <thead><tr><th>Category</th><th>Name</th><th>Subject</th><th>Date</th><th>Score</th><th>%</th><th>Note</th></tr></thead>
+        <thead><tr><th>Category</th><th>Name</th><th>Sections</th><th>Date</th><th>Score</th><th>%</th><th>Note</th></tr></thead>
         <tbody id="weekly-archived-cx-body"></tbody>
       </table></div>
     </div>
@@ -3511,7 +3693,7 @@
       <div class="settings-group-box">
         <div class="log-section">
           <h2>🧭 Navigation Bar Position</h2>
-          <p style="font-size:0.83rem; color: var(--text-muted); margin-bottom:16px;">The bottom navigation bar starts locked in place so it can't be moved by accident. Unlock it to drag it anywhere on screen by its top grip (⠿⠿) — handy if it ever overlaps content on an unusual screen size or in landscape. It always starts fresh at the default bottom-center position each time you open the app; a drag only repositions it for the current session. Your lock preference (on/off) is what's remembered.</p>
+          <p style="font-size:0.83rem; color: var(--text-muted); margin-bottom:16px;">The bottom navigation bar starts locked in place so it can't be moved by accident. Unlock it to drag it anywhere on screen by its top grip (⠿⠿) — handy if it ever overlaps content on an unusual screen size or in landscape — then lock it again once you've found a good spot. Reset returns it to the default bottom-center position.</p>
           <div class="util-bar">
             <button class="util-btn util-btn-danger" id="settings-nav-lock-btn" onclick="toggleNavLock(event)">🔒 Position: Locked</button>
             <button class="util-btn" onclick="resetNavPosition(event)">⟲ Reset Position</button>
@@ -3639,7 +3821,7 @@
 
       <div class="manual-block">
         <h3>🧭 Moving the Navigation Bar</h3>
-        <p>The bottom navigation bar starts <strong>locked in place</strong> so it can't be moved by accident. To reposition it, go to <strong>Settings → 🎨 Customization → 🧭 Navigation Bar Position</strong> and unlock it — then grab the small dotted strip (⠿⠿) along its top edge and drag it anywhere on screen (handy if it ever overlaps content on an unusual screen size or in landscape). It always resets to the default bottom-center spot the next time you open the app — a drag only moves it for your current session. Your lock preference (on/off) is what carries over.</p>
+        <p>The bottom navigation bar starts <strong>locked in place</strong> so it can't be moved by accident. To reposition it, go to <strong>Settings → 🎨 Customization → 🧭 Navigation Bar Position</strong> and unlock it — then grab the small dotted strip (⠿⠿) along its top edge and drag it anywhere on screen (handy if it ever overlaps content on an unusual screen size or in landscape). Lock it again once you've found a good spot; its position is remembered next time you open the app. You can also reset it back to the default from that same Settings screen.</p>
       </div>
 
       <div class="manual-block">
@@ -3783,7 +3965,7 @@
 
       <div class="manual-block">
         <h3>🧩 Custom Test Log</h3>
-        <p>In the Battle Log tab, below the Mock Score Trend chart. Unlike the two built-in logs, you name the category yourself (PYQ Paper, Speed Drill, whatever) — for any test that doesn't cleanly fit "chapter test" or "full mock."</p>
+        <p>In the Battle Log tab, below the Mock Score Trend chart. Unlike the two built-in logs, you name the category yourself (PYQ Paper, Speed Drill, whatever) — for any test that doesn't cleanly fit "chapter test" or "full mock." It's built from your own sections: add as many as you like with + Add Section, each with its own name, Qs, Score and Max Score — total score/% are added up automatically. Tap "N sections ▾" in the table to see the per-section breakdown.</p>
       </div>
 
       <div class="manual-block">
@@ -3864,6 +4046,15 @@
         <circle cx="12" cy="21.4" r="1.3" fill="currentColor" stroke="none"/>
       </svg>
     </span><span class="bn-label">Practice</span>
+  </button>
+  <button class="bottom-nav-btn" data-cat="track" onclick="switchCategory('track')">
+    <span class="bn-icon">
+      <svg viewBox="0 0 24 24" class="icon-target">
+        <circle class="target-ring1" cx="12" cy="12" r="9" fill="none" stroke-width="1.6"/>
+        <circle class="target-ring2" cx="12" cy="12" r="5.5" fill="none" stroke-width="1.6"/>
+        <circle class="target-dot" cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/>
+      </svg>
+    </span><span class="bn-label">Track</span>
   </button>
   <button class="bottom-nav-btn" data-cat="progress" onclick="switchCategory('progress')">
     <span class="bn-icon">
@@ -4287,6 +4478,42 @@ const SFX = {
   enabled: true,
   master: null,
   noiseBuffer: null,
+  files: {}, // name -> HTMLAudioElement, preloaded from /sounds/*.mp3
+  fileNames: ['click', 'check', 'uncheck', 'success', 'levelup', 'streak', 'delete', 'error', 'whoosh', 'notification'],
+  filesFailed: false, // if true, an early file 404'd (e.g. opened index.html standalone) — stop trying files, use synth only
+
+  // Preload real recorded sound files. Cheap and safe to call multiple times.
+  preloadFiles() {
+    if (this.filesFailed) return;
+    this.fileNames.forEach(name => {
+      if (this.files[name]) return;
+      const a = new Audio(`sounds/${name}.mp3`);
+      a.preload = 'auto';
+      a.volume = 1;
+      a.addEventListener('error', () => {
+        // Missing sounds/ folder (e.g. index.html opened outside its project folder) —
+        // fall back to the synthesized tones below rather than staying silent.
+        this.filesFailed = true;
+        this.files = {};
+      }, { once: true });
+      this.files[name] = a;
+    });
+  },
+
+  // Play a real file if we have one loaded and it hasn't errored; returns true on success attempt.
+  playFile(name) {
+    if (this.filesFailed) return false;
+    const base = this.files[name];
+    if (!base) return false;
+    try {
+      // Clone so overlapping/rapid plays (e.g. fast checkbox tapping) don't cut each other off.
+      const node = base.cloneNode(true);
+      node.volume = 0.85;
+      const p = node.play();
+      if (p && p.catch) p.catch(() => { /* autoplay-policy or decode error — silently fall through to synth on next call */ });
+      return true;
+    } catch (e) { return false; }
+  },
 
   init() {
     if (this.ctx) return;
@@ -4379,6 +4606,9 @@ const SFX = {
   play(name) {
     HAPTICS.buzz(name);
     if (!this.enabled) return;
+    // Prefer the real recorded sound file; only synthesize if it's unavailable
+    // (e.g. index.html opened standalone without its sounds/ folder alongside it).
+    if (this.playFile(name)) return;
     this.init();
     if (!this.ctx) return;
     if (this.ctx.state === 'suspended') this.ctx.resume();
@@ -6888,12 +7118,13 @@ function initNavDrag() {
   const handle = document.getElementById('nav-drag-handle');
   if (!nav || !handle) return;
 
-  // Position is intentionally NOT restored here — the nav bar always starts at its
-  // default spot when the site opens, every time. Only the lock preference persists.
   loadKey(NAV_POS_KEY).then(saved => {
     // Locked by default until the user explicitly unlocks it from Settings — once they
     // do, their choice (locked or unlocked) is what gets remembered from then on.
     navLocked = saved ? !!saved.locked : true;
+    if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
+      applyNavPosition(clampNavX(saved.x, nav), clampNavY(saved.y, nav));
+    }
     updateNavLockUI();
   });
 
@@ -6925,8 +7156,9 @@ function onNavDragEnd() {
   document.removeEventListener('pointerup', onNavDragEnd);
   const nav = document.getElementById('bottom-nav');
   nav.classList.remove('nav-dragging');
-  // Dragging repositions it for the rest of THIS session only — no position is saved,
-  // so the next time the site opens it's back at the default spot.
+  if (!navDragState) return;
+  const rect = nav.getBoundingClientRect();
+  saveNavPosition(rect.left, rect.top);
   navDragState = null;
 }
 
@@ -6940,24 +7172,29 @@ function applyNavPosition(x, y) {
   nav.style.top = y + 'px';
 }
 
-async function saveNavLockPref() {
-  try { await localDB.set(NAV_POS_KEY, JSON.stringify({ locked: navLocked }), false); } catch (e) {}
+async function saveNavPosition(x, y) {
+  try { await localDB.set(NAV_POS_KEY, JSON.stringify({ x, y, locked: navLocked }), false); } catch (e) {}
 }
 
 // If the screen resizes/rotates after a manual drag, keep the bar on-screen rather
-// than letting it drift off the edge of a now-smaller viewport (session-only, not saved).
+// than letting it drift off the edge of a now-smaller viewport.
 function reclampNavPosition() {
   const nav = document.getElementById('bottom-nav');
   if (!nav || !nav.classList.contains('nav-repositioned')) return;
   const rect = nav.getBoundingClientRect();
-  applyNavPosition(clampNavX(rect.left, nav), clampNavY(rect.top, nav));
+  const x = clampNavX(rect.left, nav);
+  const y = clampNavY(rect.top, nav);
+  applyNavPosition(x, y);
+  saveNavPosition(x, y);
 }
 
 function toggleNavLock(e) {
   if (e) e.stopPropagation();
   navLocked = !navLocked;
   updateNavLockUI();
-  saveNavLockPref();
+  const nav = document.getElementById('bottom-nav');
+  const rect = nav.getBoundingClientRect();
+  saveNavPosition(rect.left, rect.top);
   SFX.play('click');
 }
 
@@ -6979,7 +7216,7 @@ function resetNavPosition(e) {
   nav.style.left = ''; nav.style.top = '';
   navLocked = true; // matches the locked-by-default state a fresh load would show
   updateNavLockUI();
-  saveNavLockPref();
+  try { localDB.set(NAV_POS_KEY, JSON.stringify(null), false); } catch (err) {}
   SFX.play('click');
 }
 
@@ -6987,12 +7224,14 @@ const NAV_CATEGORIES = {
   practice: { label: '⚔ Practice', tabs: [
     { id: 'daily', label: '📝 Daily Qs' },
     { id: 'schedule', label: '📅 Schedule & Targets' },
+    { id: 'tests', label: '🎯 Battle Log' },
+    { id: 'coaching', label: '📘 Coaching Log' }
+  ]},
+  track: { label: '📊 Track', tabs: [
     { id: 'physics', label: '⚛ Physics', qcount: 'physics' },
     { id: 'chemistry', label: '🧪 Chemistry', qcount: 'chemistry' },
     { id: 'maths', label: '➗ Mathematics', qcount: 'maths' },
     { id: 'advanced', label: '🌌 JEE Advanced', qcount: 'advanced' },
-    { id: 'tests', label: '🎯 Battle Log' },
-    { id: 'coaching', label: '📘 Coaching Log' },
     { id: 'weekly', label: '📆 Weekly Progress' }
   ]},
   progress: { label: '📈 Progress', tabs: [
@@ -7018,14 +7257,14 @@ const TAB_TO_CATEGORY = {};
 Object.keys(NAV_CATEGORIES).forEach(cat => {
   NAV_CATEGORIES[cat].tabs.forEach(t => { TAB_TO_CATEGORY[t.id] = cat; });
 });
-// Weekly Progress is intentionally listed under both Practice and Progress (so it's reachable
-// from Progress in normal mode, and still reachable from Practice in Efficient Mode, where the
-// whole Progress category button is hidden). Pin its "home" category to Practice so opening it
+// Weekly Progress is intentionally listed under both Track and Progress (so it's reachable
+// from Progress in normal mode, and still reachable from Track in Efficient Mode, where the
+// whole Progress category button is hidden). Pin its "home" category to Track so opening it
 // never flips activeCategory to Progress and accidentally reveals the hidden category there.
-TAB_TO_CATEGORY['weekly'] = 'practice';
+TAB_TO_CATEGORY['weekly'] = 'track';
 
 let activeCategory = 'practice';
-const lastTabInCategory = { practice: 'daily', progress: 'analysis', social: 'league', settings: 'data' };
+const lastTabInCategory = { practice: 'daily', track: 'physics', progress: 'analysis', social: 'league', settings: 'data' };
 
 // Splits a nav label like "📝 Daily Qs" into its leading icon and the rest of the text,
 // so the desktop sidebar can lay them out in separate columns (icon | label | count badge).
@@ -7300,8 +7539,10 @@ function renderWeeklyProgress() {
     cxBody.innerHTML = archivedCX.length ? archivedCX.map(t => {
       const pct = Number(t.maxmarks) > 0 ? Math.round((Number(t.scored) / Number(t.maxmarks)) * 100) : null;
       const scoreClass = pct === null ? '' : (pct >= 60 ? 'score-good' : 'score-bad');
+      const sections = t.sections || [];
+      const sectionSummary = sections.length > 1 ? `${sections.length} sections` : (t.subject || (sections[0] && sections[0].name) || '-');
       return `<tr>
-        <td>${t.category || '-'}</td><td>${t.name}</td><td>${t.subject}</td><td>${t.date || '-'}</td>
+        <td>${t.category || '-'}</td><td>${t.name}</td><td>${sectionSummary}</td><td>${t.date || '-'}</td>
         <td class="${scoreClass}">${t.scored}${t.maxmarks ? ' / ' + t.maxmarks : ''}</td>
         <td>${pct === null ? '-' : pct + '%'}</td><td>${t.note || '-'}</td>
       </tr>`;
@@ -8076,9 +8317,13 @@ function renderMockTrendChart() {
 
 // ---------- Mock Analysis: section-wise breakdown + negative-marking reflection ----------
 let selectedMockIndex = 0; // which majorTests[] entry the detail view below is showing
+let qbreakSelected = null;  // index of the question box currently selected (shows the detail/tag panel)
+let qbreakTab = 'all';      // which subject group the grid is showing: 'all' | 'Physics' | 'Chemistry' | 'Maths'
 
 function viewMockAnalysis(index) {
   selectedMockIndex = index;
+  qbreakSelected = null;
+  qbreakTab = 'all';
   renderMajorTests();
   renderMockAnalysis();
   document.getElementById('mock-analysis').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -8101,6 +8346,110 @@ function segmentedBar(label, color, correct, wrong, total) {
         ${unattempted > 0 ? `<div class="seg-bar-seg seg-unattempted" style="width:${pct(unattempted)}%;">${unattempted}</div>` : ''}
       </div>
     </div>`;
+}
+
+// Tag vocabulary offered per question status — what actually matters differs
+// between a wrong answer, a lucky/unlucky correct one, and a skipped one.
+const QBREAK_TAGS = {
+  wrong: ['Silly Mistake', 'Concept Gap', 'Time Pressure', 'Guessed Wrong'],
+  correct: ['Knew It', 'Guessed Right'],
+  unattempted: ['Ran Out of Time', "Didn't Know", 'Skipped Deliberately']
+};
+
+function questionStatus(r) {
+  if (!r.stu) return 'unattempted';
+  return r.pts > 0 ? 'correct' : 'wrong';
+}
+
+function selectQbreakBox(rowIndex) {
+  qbreakSelected = qbreakSelected === rowIndex ? null : rowIndex;
+  renderMockAnalysis();
+}
+
+function selectQbreakTab(tab) {
+  qbreakTab = tab;
+  qbreakSelected = null;
+  renderMockAnalysis();
+}
+
+// Tapping a tag a second time clears it — tags are meant to be a light touch,
+// not another form to fill in.
+function tagQuestion(mockIndex, rowIndex, tag) {
+  const t = majorTests[mockIndex];
+  if (!t || !t.questionRows) return;
+  if (!t.questionTags) t.questionTags = {};
+  if (t.questionTags[rowIndex] === tag) {
+    delete t.questionTags[rowIndex];
+  } else {
+    t.questionTags[rowIndex] = tag;
+  }
+  saveMajorTests();
+  renderMockAnalysis();
+  SFX.play('click');
+}
+
+// Renders the Detailed Question Analysis card: a grid with one box per
+// question (green = correct, red = wrong, grey = unattempted). Tapping a box
+// selects it and opens a detail panel below the grid with tag chips (Silly
+// Mistake / Concept Gap / Guessed Wrong / etc.) scoped to that one question.
+// The card itself stays collapsed until the user opens it.
+function renderQuestionBreakdown(t, mockIndex) {
+  if (!t.questionRows || !t.questionRows.length) return '';
+  const tags = t.questionTags || {};
+  const counts = { correct: 0, wrong: 0, unattempted: 0 };
+  t.questionRows.forEach(r => counts[questionStatus(r)]++);
+
+  // Subject tabs let a 75-Q grid be viewed as a whole or one subject at a
+  // time — Physics/Chemistry/Maths (derived from whatever subjects are
+  // actually present in this mock's rows) plus an "All" tab.
+  const subjectsPresent = [...new Set(t.questionRows.map(r => r.subject).filter(Boolean))];
+  const tabs = subjectsPresent.length > 1 ? ['all', ...subjectsPresent] : [];
+  const activeTab = tabs.length && !tabs.includes(qbreakTab) ? 'all' : qbreakTab;
+
+  const tabsHtml = tabs.length ? `
+      <div class="qbreak-tabs">
+        ${tabs.map(tabKey => `<button type="button" class="qbreak-tab-btn ${activeTab === tabKey ? 'active' : ''}" onclick="selectQbreakTab('${tabKey}')">${tabKey === 'all' ? 'All' : tabKey}</button>`).join('')}
+      </div>` : '';
+
+  const boxesHtml = t.questionRows.map((r, i) => {
+    if (tabs.length && activeTab !== 'all' && r.subject !== activeTab) return '';
+    const status = questionStatus(r);
+    const tagged = tags[i] ? 'qb-tagged' : '';
+    const selected = qbreakSelected === i ? 'qb-selected' : '';
+    return `<div class="qbreak-box qb-${status} ${tagged} ${selected}" onclick="selectQbreakBox(${i})">${r.qnum}</div>`;
+  }).join('');
+
+  let panelHtml = '';
+  if (qbreakSelected !== null && t.questionRows[qbreakSelected]) {
+    const r = t.questionRows[qbreakSelected];
+    const status = questionStatus(r);
+    const answers = status === 'unattempted' ? 'Not attempted' : `Key: ${r.key} · You answered: ${r.stu}`;
+    const tag = tags[qbreakSelected];
+    const tagOptions = QBREAK_TAGS[status] || [];
+    panelHtml = `
+      <div class="qbreak-detail-panel">
+        <div class="qbreak-detail-top">
+          <span>Q${r.qnum} ${r.subject ? '· ' + r.subject : ''} — ${answers}</span>
+          ${tag ? `<span class="qbreak-tag-pill">${tag}</span>` : ''}
+        </div>
+        <div class="qbreak-tag-panel">
+          ${tagOptions.map(opt => `<button type="button" class="mistake-chip ${tag === opt ? 'active' : ''}" onclick="tagQuestion(${mockIndex}, ${qbreakSelected}, '${opt.replace(/'/g, "\\'")}')">${opt}</button>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  return `
+    <details class="qbreak-card">
+      <summary>🔍 Detailed Question Analysis (${t.questionRows.length} Qs) — tap a box to tag it</summary>
+      <div class="qbreak-legend">
+        <span><i class="qb-dot-correct"></i>Correct (${counts.correct})</span>
+        <span><i class="qb-dot-wrong"></i>Wrong (${counts.wrong})</span>
+        <span><i class="qb-dot-unattempted"></i>Unattempted (${counts.unattempted})</span>
+      </div>
+      ${tabsHtml}
+      <div class="qbreak-grid">${boxesHtml}</div>
+      ${panelHtml}
+    </details>`;
 }
 
 function renderMockAnalysis() {
@@ -8152,6 +8501,10 @@ function renderMockAnalysis() {
   let detailHtml = `<div class="mock-section-title" style="margin-top:${sectionHtml ? '20px' : '0'};">Viewing — ${t.name}${t.date ? ' (' + t.date + ')' : ''}${t.topics && t.topics.length ? ' — ' + t.topics.join(', ') : ''}</div>`;
 
   if (hasSubjectAttempt) {
+    const scores = computeSubjectScores(t);
+    const { scored, negmarks } = computeMockTotals(t);
+    const subjectMaxMarks = MOCK_SUBJECT_QCOUNT * MOCK_MARKS_PER_CORRECT;
+
     detailHtml += `
       <div class="seg-bar-legend">
         <span><i class="seg-dot seg-correct"></i> Correct</span>
@@ -8162,12 +8515,18 @@ function renderMockAnalysis() {
         ${segmentedBar('Physics', 'var(--phys)', Number(t.phyCorrect) || 0, Math.max(0, (Number(t.phyAttempted) || 0) - (Number(t.phyCorrect) || 0)), MOCK_SUBJECT_QCOUNT)}
         ${segmentedBar('Chemistry', 'var(--chem)', Number(t.chemCorrect) || 0, Math.max(0, (Number(t.chemAttempted) || 0) - (Number(t.chemCorrect) || 0)), MOCK_SUBJECT_QCOUNT)}
         ${segmentedBar('Maths', 'var(--maths)', Number(t.mathsCorrect) || 0, Math.max(0, (Number(t.mathsAttempted) || 0) - (Number(t.mathsCorrect) || 0)), MOCK_SUBJECT_QCOUNT)}
+      </div>
+      <p class="marks-scheme-note">Marking scheme: +${MOCK_MARKS_PER_CORRECT} correct · −${MOCK_MARKS_PER_WRONG} wrong · 0 unattempted</p>
+      <div class="marks-summary-row">
+        <div class="marks-chip">⚛ Physics: <strong>${scores.phys}</strong>/${subjectMaxMarks}</div>
+        <div class="marks-chip">🧪 Chemistry: <strong>${scores.chem}</strong>/${subjectMaxMarks}</div>
+        <div class="marks-chip">➗ Maths: <strong>${scores.maths}</strong>/${subjectMaxMarks}</div>
+        <div class="marks-chip marks-overall">🏆 Overall: <strong>${scored}</strong>/${MOCK_MAX_MARKS}</div>
       </div>`;
 
     const totalAttempted = (Number(t.phyAttempted) || 0) + (Number(t.chemAttempted) || 0) + (Number(t.mathsAttempted) || 0);
     const totalCorrect = (Number(t.phyCorrect) || 0) + (Number(t.chemCorrect) || 0) + (Number(t.mathsCorrect) || 0);
     const accuracy = totalAttempted > 0 ? Math.round((totalCorrect / totalAttempted) * 100) : 0;
-    const { scored, negmarks } = computeMockTotals(t);
     const hypotheticalScore = scored + negmarks;
 
     detailHtml += `<p class="mock-reflection">🎯 Overall accuracy on attempted questions: <strong>${accuracy}%</strong> (${totalCorrect}/${totalAttempted} attempted).</p>`;
@@ -8189,7 +8548,7 @@ function renderMockAnalysis() {
       </div>`
     : '';
 
-  el.innerHTML = sectionHtml + detailHtml + nav;
+  el.innerHTML = sectionHtml + detailHtml + renderQuestionBreakdown(t, idx) + nav;
 }
 
 // ---------- Printable weekly report ----------
@@ -8357,7 +8716,7 @@ function exportWeeklyReport() {
     <div class="stat-box"><div class="label">Last Week</div><div class="value">${xpPrevWeekReport} XP</div></div>
     <div class="stat-box"><div class="label">Movement</div><div class="value" style="font-size:14px;">${leagueMovementLabel}</div></div>
   </div>
-  <p style="font-size:12px;color:#666;">10 XP per Daily Question logged. League resets each week based on that week's XP.</p>
+  <p style="font-size:12px;color:#666;">10 XP per Daily Question logged, plus 5 bonus XP per question once marked revised. League resets each week based on that week's XP.</p>
 
   <h2>Subject Progress</h2>
   <table><thead><tr><th>Subject</th><th>Checklist %</th><th>Chapters Completed</th></tr></thead>
@@ -8927,6 +9286,9 @@ function renderDailyQuestions() {
     body.innerHTML = recentIndices.map(i => {
       const d = dailyQuestions[i];
       const timeLabel = d.timeMin ? `${d.timeMin}m` : '-';
+      const revisedBtn = d.revised
+        ? `<button type="button" class="revised-toggle-btn revised-yes" onclick="toggleDailyQuestionRevised(${i})">✅ Revised</button>`
+        : `<button type="button" class="revised-toggle-btn revised-no" onclick="toggleDailyQuestionRevised(${i})">🔁 Mark Revised</button>`;
       return `<tr>
       <td>${d.date || '-'}</td>
       <td>${d.subject}</td>
@@ -8934,6 +9296,7 @@ function renderDailyQuestions() {
       <td>${d.count}</td>
       <td>${timeLabel}</td>
       <td>${d.exam}</td>
+      <td>${revisedBtn}</td>
       <td>${d.note || '-'}</td>
       <td><button class="edit-btn" onclick="editDailyQuestion(${i})">✎</button><button class="del-btn" onclick="deleteDailyQuestion(${i})">✕</button></td>
     </tr>`;
@@ -9003,7 +9366,12 @@ function addDailyQuestions() {
   }
 
   const exam = examSelect === 'Other' && examNote ? examNote : examSelect;
-  const entry = { date, subject, level, count, timeMin: timeMin || '', exam, note };
+  const priorEntry = editingDailyQuestionIndex !== null ? dailyQuestions[editingDailyQuestionIndex] : null;
+  const entry = {
+    date, subject, level, count, timeMin: timeMin || '', exam, note,
+    revised: priorEntry ? !!priorEntry.revised : false,
+    revisedDate: priorEntry ? (priorEntry.revisedDate || null) : null
+  };
 
   if (editingDailyQuestionIndex !== null) {
     dailyQuestions[editingDailyQuestionIndex] = entry;
@@ -9022,6 +9390,22 @@ function addDailyQuestions() {
   SFX.play('success');
 
   clearDailyQuestionForm();
+}
+
+// Marks (or unmarks) a Daily Qs entry as revised. Marking it sets revisedDate
+// to today — that date, not the original practice date, is what earns the
+// bonus league XP (see computeWeeklyXpMap), so revising something you
+// practiced weeks ago still counts toward this week's rank.
+function toggleDailyQuestionRevised(index) {
+  const d = dailyQuestions[index];
+  if (!d) return;
+  d.revised = !d.revised;
+  d.revisedDate = d.revised ? dateStr(0) : null;
+  saveDailyQuestions();
+  renderDailyQuestions();
+  renderLeague();
+  syncLeaderboard();
+  SFX.play(d.revised ? 'success' : 'click');
 }
 
 // ---------- Generic edit-mode helper (used by every test log form) ----------
@@ -9667,6 +10051,26 @@ async function saveTargetProgress() {
   try { await localDB.set('jee-target-progress', JSON.stringify(targetProgress), false); } catch (e) { console.error('Save error (target progress):', e); }
 }
 
+// Reads the Chapter Skirmish Log paste box and fills No. of Qs / My Score
+// from the parsed rows. Never auto-submits the form.
+function applyPastedChapterTestResults() {
+  const text = document.getElementById('ct-paste-input').value;
+  const parsed = parsePastedResultRows(text);
+
+  if (!parsed.rows.length) {
+    SFX.play('error');
+    flashStatus('Could not read any rows — check the pasted format (Q# Key Stu Pts Poss)');
+    return;
+  }
+
+  document.getElementById('ct-questions').value = parsed.rows.length;
+  document.getElementById('ct-myscore').value = parsed.scored;
+
+  document.getElementById('ct-paste-input').value = '';
+  SFX.play('click');
+  flashStatus('Filled from paste ✓ — check the numbers, then hit Add Test');
+}
+
 // ---------- Chapter Test Log ----------
 // Reads t.mistake as either the old single-string format or the new array
 // format, so entries logged before this update still display correctly.
@@ -9817,6 +10221,38 @@ function deleteChapterTest(index) {
   scheduleUndo('chapterTest', item, index, `Removed test: ${item.topic}`);
 }
 
+// ---------- Paste Results parser (shared by Final Zone, Chapter Skirmish, Custom Test logs) ----------
+// Reads a pasted per-question answer sheet in the "# Key Stu Pts Poss" format
+// (question number, correct key, student's answer, points scored, points possible)
+// and derives attempted/correct/wrong counts plus total score, so nothing has
+// to be counted by hand. Header rows, blank lines, and stray whitespace are
+// tolerated; a row with a blank Stu column is treated as unattempted.
+function parsePastedResultRows(text) {
+  const lines = (text || '').split('\n').map(l => l.trim()).filter(Boolean);
+  const rows = [];
+  for (const line of lines) {
+    const parts = line.split(/\s+/);
+    if (!parts.length || !/^\d+$/.test(parts[0])) continue; // skip header/junk lines
+    let key, stu, pts, poss;
+    if (parts.length >= 5) {
+      [, key, stu, pts, poss] = parts;
+    } else if (parts.length === 4) {
+      [, key, pts, poss] = parts;
+      stu = '';
+    } else continue;
+    pts = parseFloat(pts);
+    poss = parseFloat(poss);
+    if (isNaN(pts) || isNaN(poss)) continue;
+    rows.push({ key, stu: (stu || '').trim(), pts, poss });
+  }
+  const attempted = rows.filter(r => r.stu).length;
+  const correct = rows.filter(r => r.stu && r.pts > 0).length;
+  const wrong = Math.max(0, attempted - correct);
+  const scored = rows.reduce((s, r) => s + r.pts, 0);
+  const maxmarks = rows.reduce((s, r) => s + r.poss, 0);
+  return { rows, attempted, correct, wrong, scored, maxmarks };
+}
+
 // ---------- Major Test Log ----------
 const MOCK_TOTAL_QUESTIONS = 75;   // fixed: 25 Physics + 25 Chemistry + 25 Maths
 const MOCK_MAX_MARKS = 300;        // fixed: 75 Qs × 4 marks
@@ -9852,6 +10288,64 @@ function computeMockTotals(t) {
     wrongOf(t.mathsAttempted, t.mathsCorrect) * MOCK_MARKS_PER_WRONG;
 
   return { scored, negmarks };
+}
+
+// Reads the Final Zone paste box, parses it, and fills the Attempted/Correct
+// number inputs — either split 25/25/25 across all three subjects, or into
+// just the one subject picked in the dropdown. Never auto-submits the form.
+// Holds the most recent successfully-parsed paste for the Final Zone form, so
+// addMajorTest() can attach the full per-question breakdown to the saved
+// entry (used to power the Detailed Question Analysis card). Cleared once
+// consumed by addMajorTest, so a plain manual entry never carries stale rows.
+let lastPastedMajorRows = null;
+
+function applyPastedMajorTestResults() {
+  const text = document.getElementById('mt-paste-input').value;
+  const target = document.getElementById('mt-paste-target').value;
+  const parsed = parsePastedResultRows(text);
+
+  if (!parsed.rows.length) {
+    SFX.play('error');
+    flashStatus('Could not read any rows — check the pasted format (Q# Key Stu Pts Poss)');
+    return;
+  }
+
+  const fillSubject = (prefix, data) => {
+    document.getElementById(`mt-${prefix}-attempted`).value = data.attempted;
+    document.getElementById(`mt-${prefix}-correct`).value = data.correct;
+  };
+  const summarize = rs => ({
+    attempted: rs.filter(r => r.stu).length,
+    correct: rs.filter(r => r.stu && r.pts > 0).length
+  });
+  const withSubjectLabel = (rs, subject, offset) => rs.map((r, i) => ({ ...r, subject, qnum: offset + i + 1 }));
+
+  if (target === 'auto') {
+    if (parsed.rows.length < 75) {
+      SFX.play('error');
+      flashStatus(`Only found ${parsed.rows.length} rows — need all 75 for Auto-split, or pick a single subject above`);
+      return;
+    }
+    const phy = parsed.rows.slice(0, 25), chem = parsed.rows.slice(25, 50), maths = parsed.rows.slice(50, 75);
+    fillSubject('phy', summarize(phy));
+    fillSubject('chem', summarize(chem));
+    fillSubject('maths', summarize(maths));
+    lastPastedMajorRows = [
+      ...withSubjectLabel(phy, 'Physics', 0),
+      ...withSubjectLabel(chem, 'Chemistry', 25),
+      ...withSubjectLabel(maths, 'Maths', 50)
+    ];
+  } else {
+    fillSubject(target, parsed);
+    const subjectLabel = { phy: 'Physics', chem: 'Chemistry', maths: 'Maths' }[target];
+    const merged = lastPastedMajorRows ? lastPastedMajorRows.filter(r => r.subject !== subjectLabel) : [];
+    lastPastedMajorRows = [...merged, ...withSubjectLabel(parsed.rows, subjectLabel, 0)]
+      .sort((a, b) => (a.subject === b.subject ? a.qnum - b.qnum : 0));
+  }
+
+  document.getElementById('mt-paste-input').value = '';
+  SFX.play('click');
+  flashStatus('Filled from paste ✓ — check the numbers, then hit Add Test');
 }
 
 function renderMajorTests() {
@@ -9943,6 +10437,19 @@ function addMajorTest() {
     phyAttempted, phyCorrect, chemAttempted, chemCorrect, mathsAttempted, mathsCorrect, note
   };
 
+  // Carry the per-question breakdown from the paste (if used this time), so the
+  // Detailed Question Analysis card can show it. On edit, keep the previously
+  // saved rows/tags unless a fresh paste was just applied.
+  const priorEntry = editingMajorTestIndex !== null ? majorTests[editingMajorTestIndex] : null;
+  if (lastPastedMajorRows) {
+    entry.questionRows = lastPastedMajorRows;
+    entry.questionTags = (priorEntry && priorEntry.questionRows) ? (priorEntry.questionTags || {}) : {};
+  } else if (priorEntry && priorEntry.questionRows) {
+    entry.questionRows = priorEntry.questionRows;
+    entry.questionTags = priorEntry.questionTags || {};
+  }
+  lastPastedMajorRows = null;
+
   if (editingMajorTestIndex !== null) {
     majorTests[editingMajorTestIndex] = entry;
     editingMajorTestIndex = null;
@@ -9981,6 +10488,132 @@ function deleteMajorTest(index) {
   scheduleUndo('majorTest', item, index, `Removed mock: ${item.name}`);
 }
 
+// Reads the Custom Test Log paste box and fills Total Qs / Score / Max Score
+// from the parsed rows. Never auto-submits the form.
+function applyPastedCustomTestResults() {
+  const text = document.getElementById('cx-paste-input').value;
+  const parsed = parsePastedResultRows(text);
+
+  if (!parsed.rows.length) {
+    SFX.play('error');
+    flashStatus('Could not read any rows — check the pasted format (Q# Key Stu Pts Poss)');
+    return;
+  }
+
+  const targetSelect = document.getElementById('cx-paste-target');
+  const n = targetSelect ? targetSelect.value : null;
+  if (!n || !document.getElementById('cx-sec-q-' + n)) {
+    SFX.play('error');
+    flashStatus('Add a section first, then pick it here');
+    return;
+  }
+
+  document.getElementById('cx-sec-q-' + n).value = parsed.rows.length;
+  document.getElementById('cx-sec-score-' + n).value = parsed.scored;
+  document.getElementById('cx-sec-max-' + n).value = parsed.maxmarks;
+  updateCxTotalPreview();
+
+  document.getElementById('cx-paste-input').value = '';
+  SFX.play('click');
+  flashStatus('Filled from paste ✓ — check the numbers, then hit Add Test');
+}
+
+// ---------- Custom Test sections (fully user-defined, unlimited sections) ----------
+let cxSectionSeq = 0;
+
+function cxSectionRowHtml(n, vals) {
+  vals = vals || {};
+  const name = vals.name != null ? vals.name : '';
+  const q = vals.questions != null ? vals.questions : '';
+  const score = vals.scored != null ? vals.scored : '';
+  const max = vals.maxmarks != null ? vals.maxmarks : '';
+  return `<div class="cx-section-row" id="cx-sec-row-${n}" data-n="${n}">
+    <input id="cx-sec-name-${n}" placeholder="Section name (e.g. Physics)" value="${name}" oninput="refreshCxPasteDropdown()">
+    <input id="cx-sec-q-${n}" type="number" min="0" placeholder="Qs" value="${q}">
+    <input id="cx-sec-score-${n}" type="number" placeholder="Score" value="${score}" oninput="updateCxTotalPreview()">
+    <input id="cx-sec-max-${n}" type="number" placeholder="Max Score" value="${max}" oninput="updateCxTotalPreview()">
+    <button type="button" class="cx-sec-remove" onclick="removeCxSectionRow(${n})">✕</button>
+  </div>`;
+}
+
+function addCxSectionRow(vals) {
+  cxSectionSeq++;
+  const n = cxSectionSeq;
+  const container = document.getElementById('cx-sections');
+  if (!container) return n;
+  container.insertAdjacentHTML('beforeend', cxSectionRowHtml(n, vals));
+  refreshCxSectionControls();
+  return n;
+}
+
+function removeCxSectionRow(n) {
+  const rows = document.querySelectorAll('#cx-sections .cx-section-row');
+  if (rows.length <= 1) { flashStatus('At least one section is required'); return; }
+  const row = document.getElementById('cx-sec-row-' + n);
+  if (row) row.remove();
+  refreshCxSectionControls();
+}
+
+function refreshCxPasteDropdown() {
+  const rows = Array.from(document.querySelectorAll('#cx-sections .cx-section-row'));
+  const targetSelect = document.getElementById('cx-paste-target');
+  if (!targetSelect) return;
+  const current = targetSelect.value;
+  targetSelect.innerHTML = rows.map(row => {
+    const n = row.dataset.n;
+    const nameInput = document.getElementById('cx-sec-name-' + n);
+    const label = (nameInput && nameInput.value.trim()) || ('Section ' + n);
+    return `<option value="${n}">${label}</option>`;
+  }).join('');
+  if (rows.some(r => r.dataset.n === current)) targetSelect.value = current;
+}
+
+function refreshCxSectionControls() {
+  const rows = Array.from(document.querySelectorAll('#cx-sections .cx-section-row'));
+  rows.forEach(row => {
+    const btn = row.querySelector('.cx-sec-remove');
+    if (btn) btn.disabled = rows.length <= 1;
+  });
+  refreshCxPasteDropdown();
+  updateCxTotalPreview();
+}
+
+function updateCxTotalPreview() {
+  const rows = Array.from(document.querySelectorAll('#cx-sections .cx-section-row'));
+  let totalQ = 0, totalScore = 0, totalMax = 0;
+  rows.forEach(row => {
+    const n = row.dataset.n;
+    totalQ += Number(document.getElementById('cx-sec-q-' + n).value) || 0;
+    totalScore += Number(document.getElementById('cx-sec-score-' + n).value) || 0;
+    totalMax += Number(document.getElementById('cx-sec-max-' + n).value) || 0;
+  });
+  const preview = document.getElementById('cx-total-preview');
+  if (!preview) return;
+  const pct = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : null;
+  preview.innerHTML = rows.length > 1
+    ? `Total across ${rows.length} sections: <strong>${totalScore}${totalMax ? ' / ' + totalMax : ''}</strong>${pct !== null ? ' (' + pct + '%)' : ''}, ${totalQ} Qs`
+    : '';
+}
+
+function readCxSections() {
+  const rows = Array.from(document.querySelectorAll('#cx-sections .cx-section-row'));
+  return rows.map(row => {
+    const n = row.dataset.n;
+    return {
+      name: document.getElementById('cx-sec-name-' + n).value.trim(),
+      questions: document.getElementById('cx-sec-q-' + n).value,
+      scored: document.getElementById('cx-sec-score-' + n).value,
+      maxmarks: document.getElementById('cx-sec-max-' + n).value
+    };
+  }).filter(s => s.name || s.questions !== '' || s.scored !== '' || s.maxmarks !== '');
+}
+
+function toggleCxBreakdown(i) {
+  const row = document.getElementById('cx-breakdown-' + i);
+  if (!row) return;
+  row.style.display = row.style.display === 'none' ? '' : 'none';
+}
+
 // ---------- Custom Test Log (fully user-defined) ----------
 function renderCustomTests() {
   const body = document.getElementById('custom-test-body');
@@ -9997,16 +10630,29 @@ function renderCustomTests() {
     const t = customTests[i];
     const pct = Number(t.maxmarks) > 0 ? Math.round((Number(t.scored) / Number(t.maxmarks)) * 100) : null;
     const scoreClass = pct === null ? '' : (pct >= 60 ? 'score-good' : 'score-bad');
-    return `<tr>
+    const sections = t.sections || [];
+    const sectionSummary = sections.length > 1
+      ? `<button type="button" class="cx-toggle-breakdown" onclick="toggleCxBreakdown(${i})">${sections.length} sections ▾</button>`
+      : (t.subject || (sections[0] && sections[0].name) || '-');
+    const mainRow = `<tr>
       <td>${t.category || '-'}</td>
       <td>${t.name}</td>
-      <td>${t.subject}</td>
+      <td>${sectionSummary}</td>
       <td>${t.date || '-'}</td>
       <td class="${scoreClass}">${t.scored}${t.maxmarks ? ' / ' + t.maxmarks : ''}</td>
       <td>${pct === null ? '-' : pct + '%'}</td>
       <td>${t.note || '-'}</td>
       <td><button class="edit-btn" onclick="editCustomTest(${i})">✎</button><button class="del-btn" onclick="deleteCustomTest(${i})">✕</button></td>
     </tr>`;
+    const breakdownRow = sections.length > 1 ? `<tr class="cx-breakdown-row" id="cx-breakdown-${i}" style="display:none;"><td colspan="8">
+      <div class="cx-breakdown-list">
+        ${sections.map(s => {
+          const sp = Number(s.maxmarks) > 0 ? Math.round((Number(s.scored) / Number(s.maxmarks)) * 100) : null;
+          return `<span><strong>${s.name || 'Section'}:</strong> ${s.scored || 0}${s.maxmarks ? ' / ' + s.maxmarks : ''}${sp !== null ? ' (' + sp + '%)' : ''}${s.questions ? ', ' + s.questions + ' Qs' : ''}</span>`;
+        }).join('')}
+      </div>
+    </td></tr>` : '';
+    return mainRow + breakdownRow;
   }).join('');
   if (typeof renderWeeklyProgress === 'function') renderWeeklyProgress();
 }
@@ -10016,26 +10662,32 @@ let editingCustomTestIndex = null;
 function clearCustomTestForm() {
   document.getElementById('cx-category').value = '';
   document.getElementById('cx-name').value = '';
-  document.getElementById('cx-subject').value = 'Mixed';
   document.getElementById('cx-date').value = '';
-  document.getElementById('cx-questions').value = '';
-  document.getElementById('cx-scored').value = '';
-  document.getElementById('cx-maxmarks').value = '';
   document.getElementById('cx-time').value = '';
   document.getElementById('cx-note').value = '';
+  document.getElementById('cx-sections').innerHTML = '';
+  cxSectionSeq = 0;
+  addCxSectionRow();
 }
 
 function editCustomTest(index) {
   const t = customTests[index];
   document.getElementById('cx-category').value = t.category || '';
   document.getElementById('cx-name').value = t.name;
-  document.getElementById('cx-subject').value = t.subject;
   document.getElementById('cx-date').value = t.date || '';
-  document.getElementById('cx-questions').value = t.questions || '';
-  document.getElementById('cx-scored').value = t.scored;
-  document.getElementById('cx-maxmarks').value = t.maxmarks || '';
   document.getElementById('cx-time').value = t.timeMin || '';
   document.getElementById('cx-note').value = t.note || '';
+
+  document.getElementById('cx-sections').innerHTML = '';
+  cxSectionSeq = 0;
+  const sections = (t.sections && t.sections.length) ? t.sections : [{
+    name: (t.subject && t.subject !== 'Mixed') ? t.subject : '',
+    questions: t.questions || '',
+    scored: t.scored,
+    maxmarks: t.maxmarks || ''
+  }];
+  sections.forEach(s => addCxSectionRow(s));
+
   editingCustomTestIndex = index;
   enterEditMode('cx', cancelEditCustomTest);
   document.getElementById('cx-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -10051,21 +10703,32 @@ function cancelEditCustomTest() {
 function addCustomTest() {
   const category = document.getElementById('cx-category').value.trim();
   const name = document.getElementById('cx-name').value.trim();
-  const subject = document.getElementById('cx-subject').value;
   const date = document.getElementById('cx-date').value;
-  const questions = document.getElementById('cx-questions').value;
-  const scored = document.getElementById('cx-scored').value;
-  const maxmarks = document.getElementById('cx-maxmarks').value;
   const timeMin = document.getElementById('cx-time').value;
   const note = document.getElementById('cx-note').value.trim();
+  const sections = readCxSections();
+  const hasScore = sections.some(s => s.scored !== '');
 
-  if (!name || scored === '') {
+  if (!name || !sections.length || !hasScore) {
     SFX.play('error');
-    flashStatus('Please fill test name and your score');
+    flashStatus('Please fill test name and at least one section\'s score');
     return;
   }
 
-  const entry = { category, name, subject, date, questions, scored, maxmarks, timeMin, note };
+  const totalQuestions = sections.reduce((sum, s) => sum + (Number(s.questions) || 0), 0);
+  const totalScored = sections.reduce((sum, s) => sum + (Number(s.scored) || 0), 0);
+  const totalMax = sections.reduce((sum, s) => sum + (Number(s.maxmarks) || 0), 0);
+  const subjectSummary = sections.length > 1
+    ? sections.map(s => s.name || 'Section').join(', ')
+    : (sections[0].name || 'Mixed');
+
+  const entry = {
+    category, name, date, timeMin, note, sections,
+    subject: subjectSummary,
+    questions: totalQuestions,
+    scored: totalScored,
+    maxmarks: totalMax
+  };
 
   if (editingCustomTestIndex !== null) {
     customTests[editingCustomTestIndex] = entry;
@@ -10412,6 +11075,134 @@ const RESET_KEYS = [
   'jee-notif-enabled', 'jee-last-notified', 'jee-revision-counts', 'jee-last-revised-dates', 'jee-revision-events', 'jee-chapter-70-dates', 'jee-study-reminder-last-notified', 'jee-exam-date', 'jee-custom-tests', 'jee-study-hours', 'jee-coaching-log', 'jee-coaching-hw-last-notified', 'jee-coaching-rev-last-notified', 'jee-lb-visible', 'jee-onboarding-done', 'jee-daily-schedule', 'jee-daily-targets', 'jee-target-progress'
 ];
 
+// ---------- Inline form help (?) popups ----------
+// One short "what does this field mean" cheat-sheet per add-entry form, shown as a small popup
+// right next to the form itself instead of sending people off to the separate Manual tab.
+const FORM_HELP = {
+  dq: {
+    title: '📝 Daily Questions Log — Help',
+    fields: [
+      ['Subject / Level', 'Which subject and how hard the questions were.'],
+      ['No. of Questions', 'How many questions you attempted in this session.'],
+      ['Time Taken (min)', 'Optional. Fill it in and your average pace (sec/question) shows up in the daily summary and Weekly Report.'],
+      ['Exam', 'JEE Main, JEE Advanced, or Other (type the exam name in the box that appears).'],
+      ['Note', 'Optional — source, topic, or mistakes worth remembering.']
+    ],
+    tip: 'One entry per session is fine — log again later the same day for another session.'
+  },
+  sh: {
+    title: '📚 Study Hours (Today) — Help',
+    fields: [
+      ['Physics / Chemistry / Maths (hrs)', 'Total self-study hours for each subject today. Leave a subject blank if you didn\'t study it.']
+    ],
+    tip: 'Saving again today overwrites today\'s numbers — it never creates a duplicate entry. This feeds the "average daily hours" stat in the Weekly Report.'
+  },
+  sc: {
+    title: '📅 Daily Schedule — Help',
+    fields: [
+      ['Time', 'When the block starts.'],
+      ['Block name', 'Whatever you\'re doing — e.g. "Physics Revision".'],
+      ['Subject', 'Tag it Physics/Chemistry/Maths/Break/Other for color-coding.'],
+      ['Duration (min)', 'How long the block runs.'],
+      ['Note', 'Optional extra detail.']
+    ],
+    tip: 'You get 3 blocks per screen — leave a block\'s name empty to skip it. Add more rows anytime by saving and reopening the form.'
+  },
+  tg: {
+    title: '🎯 Daily Targets — Help',
+    fields: [
+      ['Target name', 'What you\'re aiming for, e.g. "Solve Qs".'],
+      ['Counter vs Checkbox', 'Counter = a number you tick up toward a goal (e.g. 50 questions). Checkbox = simple done / not done.'],
+      ['Target number', 'Only for Counter targets — the number you\'re aiming to hit.'],
+      ['Unit', 'What the number means, e.g. "questions" or "hrs".'],
+      ['All subjects', 'Tick this to create the same target separately for Physics, Chemistry & Maths in one go.']
+    ],
+    tip: 'Progress resets every day automatically. The target itself stays until you edit or delete it.'
+  },
+  act: {
+    title: '🎯 Advanced Chapter Test Log — Help',
+    fields: [
+      ['Subject / Topic / Level', 'Which chapter this Advanced-level test covered and its difficulty.'],
+      ['No. of Qs', 'Total questions in the test.'],
+      ['My Score', 'Marks/questions you actually got right.'],
+      ['Topper\'s Score', 'Optional — the best score in your batch, for comparison.'],
+      ['Note', 'Optional — mistakes or gaps worth remembering.']
+    ],
+    tip: 'This is the Advanced-difficulty counterpart to the Chapter Skirmish Log — keep the two separate so your Advanced-zone stats stay accurate.'
+  },
+  amt: {
+    title: '🎯 Advanced Full Mock Log — Help',
+    fields: [
+      ['Test Name / Date', 'Whatever you want to call it, and when you took it.'],
+      ['Total Qs / Potential Marks', 'Total questions and the maximum possible marks for the full mock.'],
+      ['Negative Marks Deducted', 'Total marks lost to wrong answers — enter as a positive number.'],
+      ['Marks I Got', 'Your final score after negative marking.'],
+      ['Note', 'Optional — weak sections, time issues, etc.']
+    ],
+    tip: '% and the trend chart are calculated automatically from these numbers — you don\'t need to work anything out yourself.'
+  },
+  ct: {
+    title: '🔫 Chapter Skirmish Log — Help',
+    fields: [
+      ['Subject / Topic / Level', 'Which chapter this test covered and how hard it was.'],
+      ['No. of Qs', 'Total questions in the test.'],
+      ['My Score', 'Marks/questions you got right.'],
+      ['Topper\'s Score', 'Optional — best score in your batch, for comparison.'],
+      ['Mistake Type chips', 'Optional — tap as many as apply. Powers the "why this chapter is weak" insight on the Weak Spot Radar.'],
+      ['Paste Results', 'Optional shortcut — paste your answer-sheet rows and it fills in No. of Qs and My Score for you.']
+    ],
+    tip: 'Use this for single-chapter tests. For full-syllabus mocks, use the Final Zone Log below instead.'
+  },
+  mt: {
+    title: '💀 Final Zone Log — Help',
+    fields: [
+      ['Test Name / Topics / Date', 'Name it, optionally list topics covered (comma separated), and the date.'],
+      ['Attempted / Correct per subject', 'Just these two numbers per subject (out of 25) — score and negative marks are calculated automatically at the standard +4 / −1.'],
+      ['Paste Results', 'Optional shortcut — paste answer-sheet rows and auto-split across all 3 subjects, or target one subject.'],
+      ['Note', 'Optional — weak sections, time issues, etc.']
+    ],
+    tip: 'This log is for full-syllabus mocks (75 Qs, 25 per subject) only — nothing to add up yourself, just Attempted and Correct.'
+  },
+  cx: {
+    title: '🧩 Custom Test Log — Help',
+    fields: [
+      ['Test Category', 'A label you make up — "PYQ Paper", "Speed Drill", anything that doesn\'t fit the other two logs.'],
+      ['Test Name / Date / Time Taken', 'Whatever you want to call it, when you took it, and (optionally) how long it took overall.'],
+      ['Sections', 'Add as many as you want with + Add Section. Each has its own name (e.g. "Physics", "Part A"), Qs, Score and Max Score — build any structure: one section for a simple test, or several for a mock with parts/subjects.'],
+      ['Fill from Paste', 'Optional shortcut — paste answer-sheet rows and pick which section to auto-fill from the dropdown.'],
+      ['Note', 'Optional — anything worth remembering.']
+    ],
+    tip: 'Total score, max score and % are added up automatically across all your sections — nothing to calculate by hand. Tap a "N sections ▾" link in the table to see the per-section breakdown.'
+  },
+  cl: {
+    title: '📘 What Got Taught Today — Help',
+    fields: [
+      ['Date / Subject', 'When the class happened and which subject.'],
+      ['What was taught', 'Topic or chapter your coaching covered.'],
+      ['Homework given', 'Leave blank if there was none.']
+    ],
+    tip: 'Turn on Reminders in the Data tab and you\'ll get a nudge if homework is still pending, and later to revise what was taught.'
+  }
+};
+
+function showFormHelp(id) {
+  const data = FORM_HELP[id];
+  if (!data) return;
+  document.getElementById('form-help-title').textContent = data.title;
+  const fieldsHtml = data.fields.map(([label, desc]) =>
+    `<p class="fh-field"><strong>${label}:</strong> ${desc}</p>`
+  ).join('');
+  const tipHtml = data.tip ? `<p class="fh-tip">💡 ${data.tip}</p>` : '';
+  document.getElementById('form-help-body').innerHTML = fieldsHtml + tipHtml;
+  document.getElementById('form-help-overlay').classList.add('open');
+  document.getElementById('form-help-modal').classList.add('open');
+}
+
+function closeFormHelp() {
+  document.getElementById('form-help-overlay').classList.remove('open');
+  document.getElementById('form-help-modal').classList.remove('open');
+}
+
 function openResetModal() {
   document.getElementById('reset-confirm-input').value = '';
   document.getElementById('reset-confirm-btn').disabled = true;
@@ -10637,6 +11428,10 @@ async function checkCoachingReminders() {
 // and Shadow Fight (belt-color progression). The underlying XP thresholds are shared — only
 // the presented name/icon/color switch, based on whichever Game Mode the player has selected.
 const XP_PER_DAILY_Q = 10;
+// Bonus XP for actually revising a batch of questions after the fact, on top of the
+// XP already earned for practicing them — credited to whichever week the revision
+// happened in, not the original practice week, so revisiting old work still pays off now.
+const XP_REVISION_BONUS_PER_Q = 5;
 
 // 6 leagues total, matching the real Free Fire rank ladder: Bronze, Silver, Gold,
 // Platinum, Diamond, then Grandmaster as the elite topmost league (starts at 5000 XP).
@@ -10729,8 +11524,13 @@ function computeWeeklyXpMap() {
   dailyQuestions.forEach(dq => {
     if (!dq.date) return;
     const wk = getISOWeekKey(dq.date);
-    if (!wk) return;
-    map[wk] = (map[wk] || 0) + (Number(dq.count) || 0) * XP_PER_DAILY_Q;
+    if (wk) map[wk] = (map[wk] || 0) + (Number(dq.count) || 0) * XP_PER_DAILY_Q;
+
+    // Revision bonus lands in the week it was confirmed, not the original practice week.
+    if (dq.revised && dq.revisedDate) {
+      const revWk = getISOWeekKey(dq.revisedDate);
+      if (revWk) map[revWk] = (map[revWk] || 0) + (Number(dq.count) || 0) * XP_REVISION_BONUS_PER_Q;
+    }
   });
   return map;
 }
@@ -10804,7 +11604,62 @@ function hideLeagueCutscene() {
   if (overlay) overlay.classList.remove('show');
 }
 
+// Surfaces Daily Qs entries from before today that haven't been confirmed
+// revised yet, grouped by subject, with a one-tap bulk "Mark Revised" per
+// subject. Confirming revision is what unlocks the bonus league XP.
+function renderRevisionCheckBar() {
+  const el = document.getElementById('revision-check-bar');
+  if (!el) return;
+  const today = dateStr(0);
+  const pending = dailyQuestions.filter(d => !d.revised && d.date && d.date !== today);
+
+  if (!pending.length) {
+    el.innerHTML = `<div class="revision-check-bar rcb-clear">
+      <span class="rcb-title">🔁 All caught up</span>
+      <span class="rcb-sub" style="margin:0;">No pending revisions — nice.</span>
+    </div>`;
+    return;
+  }
+
+  const bySubject = {};
+  pending.forEach(d => { bySubject[d.subject] = (bySubject[d.subject] || 0) + (Number(d.count) || 0); });
+  const totalQs = Object.values(bySubject).reduce((s, n) => s + n, 0);
+
+  el.innerHTML = `
+    <div class="revision-check-bar">
+      <div class="rcb-title">🔁 Have you actually revised the questions you practiced earlier?</div>
+      <div class="rcb-sub">${totalQs} question${totalQs === 1 ? '' : 's'} across ${pending.length} log${pending.length === 1 ? '' : 's'} not yet marked revised — confirming earns bonus league XP (+${XP_REVISION_BONUS_PER_Q}/question).</div>
+      <div class="rcb-chip-row">
+        ${Object.entries(bySubject).map(([subj, count]) => `
+          <div class="rcb-chip">${subj}: ${count} Qs <button type="button" onclick="markSubjectRevised('${subj.replace(/'/g, "\\'")}')">Mark Revised</button></div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+// Bulk-marks every not-yet-revised entry for one subject (excluding today's own
+// log, so same-day entries aren't nagged) — used by the Revision Check bar.
+function markSubjectRevised(subject) {
+  const today = dateStr(0);
+  let changed = false;
+  dailyQuestions.forEach(d => {
+    if (d.subject === subject && !d.revised && d.date && d.date !== today) {
+      d.revised = true;
+      d.revisedDate = today;
+      changed = true;
+    }
+  });
+  if (!changed) return;
+  saveDailyQuestions();
+  renderDailyQuestions();
+  renderLeague();
+  syncLeaderboard();
+  SFX.play('success');
+  flashStatus('Marked as revised ✓ — bonus XP added');
+}
+
 function renderLeague() {
+  renderRevisionCheckBar();
   const weeklyMap = computeWeeklyXpMap();
   const currentWeekKey = getISOWeekKey(dateStr(0));
   const currentXp = weeklyMap[currentWeekKey] || 0;
@@ -10907,6 +11762,7 @@ async function init() {
   initNavDrag();
   initScrollPerf();
   await loadSfxPref();
+  SFX.preloadFiles();
   await loadHapticsPref();
   await loadEfficientModePref();
   await loadGameModePref();
@@ -10983,6 +11839,9 @@ async function init() {
   const savedCustomTests = await loadKey('jee-custom-tests');
   customTests = savedCustomTests || [];
   renderCustomTests();
+  if (document.getElementById('cx-sections') && !document.getElementById('cx-sections').children.length) {
+    addCxSectionRow();
+  }
 
   const savedStudyHours = await loadKey('jee-study-hours');
   studyHours = savedStudyHours || [];

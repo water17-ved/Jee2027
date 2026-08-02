@@ -9,7 +9,20 @@ const APP_SHELL = [
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './screenshots/narrow-daily.png',
+  './screenshots/narrow-advanced.png',
+  './screenshots/wide-dashboard.png',
+  './sounds/click.mp3',
+  './sounds/check.mp3',
+  './sounds/uncheck.mp3',
+  './sounds/success.mp3',
+  './sounds/levelup.mp3',
+  './sounds/streak.mp3',
+  './sounds/delete.mp3',
+  './sounds/error.mp3',
+  './sounds/whoosh.mp3',
+  './sounds/notification.mp3'
 ];
 
 self.addEventListener('install', (event) => {
