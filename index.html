@@ -762,6 +762,12 @@
     font-family: var(--font-display); font-weight: 800; letter-spacing: 1px;
     font-size: 0.85rem; color: var(--xp); text-align: center;
   }
+  .splash-daily-quote {
+    font-size: 0.78rem; color: var(--text-muted); text-align: center; font-style: italic;
+    max-width: 300px; margin: 14px auto 0; line-height: 1.5;
+    opacity: 0; animation: splash-fade-in 0.6s ease 0.2s forwards;
+  }
+  @media (prefers-reduced-motion: reduce) { .splash-daily-quote { animation: none; opacity: 1; } }
   .splash-spinner {
     width: 30px; height: 30px; margin-top: 14px;
     border: 3px solid rgba(255,166,61,0.2); border-top-color: var(--gold-bright);
@@ -1129,7 +1135,13 @@
   .trend-chart-wrap h2 { margin: 0 0 4px 0; font-size: 1.05rem; font-family: var(--font-display); color: var(--gold); }
   .trend-chart-empty { color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 20px; }
 
-  .mock-section-title { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 4px; }
+  .mock-section-title {
+    font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 10px;
+    text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 8px;
+  }
+  .mock-section-title::after {
+    content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent);
+  }
   .mock-bars { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
   .mock-bar-row { display: flex; align-items: center; gap: 10px; }
   .mock-bar-label { width: 70px; font-size: 0.78rem; color: var(--text-main); flex-shrink: 0; }
@@ -2352,14 +2364,47 @@
   .analysis-section-block { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
   .analysis-weight-bars { max-height: 480px; overflow-y: auto; padding-right: 4px; -webkit-overflow-scrolling: touch; }
 
-  /* Chapter cards — replaces a wide table that overflowed on phone screens */
+  .analysis-toolbar { display: flex; gap: 8px; margin: 14px 0 10px; flex-wrap: wrap; }
+  .analysis-search-input {
+    flex: 1; min-width: 140px; padding: 9px 13px; border-radius: 999px; border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03); color: var(--text-main); font-family: var(--font-body); font-size: 0.82rem;
+    outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .analysis-search-input:focus { border-color: var(--gold-bright); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold-bright) 18%, transparent); }
+  .analysis-search-input::placeholder { color: var(--text-muted); }
+  .analysis-sort-select {
+    padding: 9px 12px; border-radius: 999px; border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03); color: var(--text-main); font-family: var(--font-body); font-size: 0.78rem;
+    outline: none; cursor: pointer;
+  }
+  .analysis-filter-chips { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .analysis-filter-chip {
+    font-size: 0.72rem; font-weight: 600; padding: 5px 12px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--border); color: var(--text-muted); background: rgba(255,255,255,0.02);
+    transition: all 0.15s ease; white-space: nowrap;
+  }
+  .analysis-filter-chip:hover { color: var(--text-main); border-color: var(--text-muted); }
+  .analysis-filter-chip.active {
+    color: var(--text-main); border-color: var(--gold-bright);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--gold-bright) 18%, transparent), transparent);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .analysis-result-count { margin-left: auto; font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; }
   .analysis-chapter-list { display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto; overflow-x: hidden; padding-right: 6px; scrollbar-width: thin; scrollbar-color: var(--gold) transparent; -webkit-overflow-scrolling: touch; }
   .analysis-chapter-list::-webkit-scrollbar { width: 6px; }
   .analysis-chapter-list::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
   .analysis-chapter-list::-webkit-scrollbar-track { background: transparent; }
   .analysis-chapter-card {
-    border-left: 3px solid var(--border); border-radius: 8px; padding: 12px 14px;
-    background: rgba(255,255,255,0.02);
+    position: relative; border-left: 3px solid var(--border); border-radius: 10px; padding: 13px 15px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.035), rgba(255,255,255,0.008));
+    border-top: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.03); border-bottom: 1px solid rgba(0,0,0,0.2);
+    box-shadow: 0 6px 16px -10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  }
+  .analysis-chapter-card:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.012));
+    box-shadow: 0 10px 22px -12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
   }
   .syl-unit-card {
     border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; overflow: hidden;
@@ -2385,8 +2430,10 @@
   .ac-emoji { font-size: 0.95rem; flex-shrink: 0; }
   .ac-chapter-name { font-size: 0.9rem; font-weight: 700; color: var(--text-main); flex: 1; min-width: 140px; line-height: 1.35; }
   .ac-priority-tag {
-    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
-    border: 1px solid; border-radius: 999px; padding: 2px 8px; flex-shrink: 0; white-space: nowrap;
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.045em; text-transform: uppercase;
+    border: 1px solid; border-radius: 999px; padding: 3px 10px 3px 9px; flex-shrink: 0; white-space: nowrap;
+    background: linear-gradient(135deg, color-mix(in srgb, currentColor 18%, transparent), color-mix(in srgb, currentColor 4%, transparent));
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
   }
   .ac-stats-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
   .ac-stat { display: flex; flex-direction: column; gap: 1px; }
@@ -2423,29 +2470,47 @@
   .roadmap-phase-name { font-weight: 700; font-size: 0.88rem; color: var(--text-main); margin-bottom: 3px; }
   .roadmap-phase-desc { font-size: 0.76rem; color: var(--text-muted); line-height: 1.4; }
   .roadmap-chapter-card {
-    padding: 12px 14px; border-radius: 10px; margin-bottom: 8px;
-    background: rgba(255,255,255,0.025); border: 1px solid var(--border); border-left: 3px solid var(--border);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    position: relative; padding: 13px 15px; border-radius: 11px; margin-bottom: 9px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.035), rgba(255,255,255,0.008));
+    border: 1px solid var(--border); border-left: 3px solid var(--border);
+    box-shadow: 0 6px 16px -10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  }
+  .roadmap-chapter-card:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.012));
+    box-shadow: 0 10px 24px -12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07);
   }
   .rc-top-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
-  .rc-name { font-weight: 700; font-size: 0.85rem; color: var(--text-main); }
-  .rc-tier-tag { font-size: 0.62rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+  .rc-name { font-weight: 700; font-size: 0.85rem; color: var(--text-main); letter-spacing: 0.1px; }
+  .rc-tier-tag {
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.04em; padding: 3px 10px; border-radius: 999px; border: 1px solid;
+    white-space: nowrap; background: linear-gradient(135deg, color-mix(in srgb, currentColor 16%, transparent), transparent);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
   .rc-row { display: flex; gap: 6px; font-size: 0.74rem; line-height: 1.4; margin-top: 3px; }
   .rc-label { flex-shrink: 0; color: var(--text-muted); min-width: 74px; }
   .rc-value { color: var(--text-main); opacity: 0.9; }
   .rc-cross-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .rc-cross-chip {
     font-size: 0.68rem; padding: 3px 9px; border-radius: 999px; cursor: pointer;
-    background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.4); color: var(--text-main);
-    white-space: nowrap; transition: background 0.15s ease;
+    background: linear-gradient(135deg, rgba(124,58,237,0.16), rgba(124,58,237,0.06));
+    border: 1px solid rgba(124,58,237,0.4); color: var(--text-main);
+    white-space: nowrap; transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
   }
-  .rc-cross-chip:hover { background: rgba(124,58,237,0.25); }
+  .rc-cross-chip:hover { transform: translateY(-1px); box-shadow: 0 4px 10px -3px rgba(124,58,237,0.5); background: rgba(124,58,237,0.25); }
   .roadmap-chapter-card.rc-flash { animation: rcFlash 1.6s ease; }
   @keyframes rcFlash {
     0% { box-shadow: 0 0 0 2px rgba(124,58,237,0.9); }
     100% { box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
   }
-  .roadmap-cross-summary { margin-bottom: 18px; padding: 12px 14px; border-radius: 10px; background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.3); }
+  .roadmap-cross-summary {
+    margin-bottom: 18px; padding: 14px 16px; border-radius: 12px;
+    background: linear-gradient(160deg, rgba(124,58,237,0.1), rgba(124,58,237,0.03));
+    border: 1px solid rgba(124,58,237,0.32);
+    box-shadow: 0 6px 18px -10px rgba(124,58,237,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
+  }
   .roadmap-cross-summary-title { font-weight: 700; font-size: 0.85rem; color: var(--text-main); margin-bottom: 8px; }
   .roadmap-cross-summary-pair { font-size: 0.75rem; line-height: 1.6; color: var(--text-muted); }
   .roadmap-cross-summary-pair b { color: var(--text-main); font-weight: 600; }
@@ -2746,8 +2811,18 @@
   body.efficient-mode .rank-badge {
     display: none !important;
   }
+  #efficient-daily-quote {
+    display: block; font-size: 0.85rem; color: var(--text-muted); font-style: italic;
+    margin-top: 6px; padding-top: 8px; border-top: 1px dashed var(--border);
+  }
+  body.efficient-mode .bottom-nav-btn[data-cat="track"],
   body.efficient-mode .bottom-nav-btn[data-cat="progress"],
   body.efficient-mode .bottom-nav-btn[data-cat="social"] {
+    display: none !important;
+  }
+  body.efficient-mode .sidebar-group[data-cat="track"],
+  body.efficient-mode .sidebar-group[data-cat="progress"],
+  body.efficient-mode .sidebar-group[data-cat="social"] {
     display: none !important;
   }
   /* Flatten every skin's background to one plain, non-distracting color */
@@ -2769,7 +2844,8 @@
     display: none !important;
     content: none !important;
   }
-  /* No glow, no motion, no gradients on text — flat and calm */
+  /* No glow, no motion, no colored text-shadow — flat and calm baseline; specific
+     panels get their box-shadow reintroduced below as part of the glass treatment. */
   body.efficient-mode *,
   body.efficient-mode *::before,
   body.efficient-mode *::after {
@@ -2788,10 +2864,9 @@
     letter-spacing: normal !important;
     color: var(--text-main) !important;
   }
-  body.efficient-mode header {
-    background: #101317 !important;
-    border-color: var(--border) !important;
-  }
+  /* ---- Glass design: every panel becomes translucent frosted glass over the flat
+     black backdrop — soft blur, thin light border, gentle shadow for depth. ---- */
+  body.efficient-mode header,
   body.efficient-mode .chapter-card,
   body.efficient-mode .log-section,
   body.efficient-mode .completion-card,
@@ -2800,21 +2875,34 @@
   body.efficient-mode .danger-zone-panel,
   body.efficient-mode .schedule-block,
   body.efficient-mode .target-card,
-  body.efficient-mode .coaching-card {
-    background: #12151a !important;
-    border-color: var(--border) !important;
+  body.efficient-mode .coaching-card,
+  body.efficient-mode .analysis-chapter-card,
+  body.efficient-mode .roadmap-chapter-card,
+  body.efficient-mode .syl-unit-card,
+  body.efficient-mode .util-btn,
+  body.efficient-mode .add-btn,
+  body.efficient-mode .bottom-nav,
+  body.efficient-mode .sidebar-desktop,
+  body.efficient-mode select,
+  body.efficient-mode input {
+    background: rgba(255,255,255,0.045) !important;
+    backdrop-filter: blur(16px) saturate(1) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1) !important;
+    border-color: rgba(255,255,255,0.12) !important;
+    box-shadow: 0 8px 24px -12px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06) !important;
   }
-  body.efficient-mode .chapter-card:hover {
-    transform: none !important;
-  }
+  body.efficient-mode .chapter-card:hover,
   body.efficient-mode .completion-card:hover,
-  body.efficient-mode .coaching-card:hover {
+  body.efficient-mode .coaching-card:hover,
+  body.efficient-mode .analysis-chapter-card:hover,
+  body.efficient-mode .roadmap-chapter-card:hover {
+    background: rgba(255,255,255,0.07) !important;
     transform: none !important;
   }
   body.efficient-mode .chapter-card.tier-gold,
   body.efficient-mode .chapter-card.tier-silver,
   body.efficient-mode .chapter-card.tier-bronze {
-    border-color: var(--border) !important;
+    border-color: rgba(255,255,255,0.12) !important;
   }
   /* Schedule & Targets — drop the per-subject accent colors (phys/chem/maths borders,
      tags, progress fills) so this block stays as calm and colorless as the rest of
@@ -2877,6 +2965,7 @@
   <img src="icon-192.png" alt="" class="splash-icon" onerror="this.style.display='none'">
   <div class="splash-title">JEE BATTLE ROYALE</div>
   <div class="splash-sub">TRACKER</div>
+  <p id="splash-daily-quote" class="splash-daily-quote"></p>
   <div class="splash-spinner"></div>
   <button class="util-btn util-btn-cyan splash-efficient-toggle" id="splash-efficient-toggle-btn" onclick="toggleEfficientMode()">⚡ Efficient Mode: Off</button>
 </div>
@@ -2958,6 +3047,7 @@
     </button>
     <h1 id="app-title">🔥 JEE Battle Royale Tracker</h1>
     <p id="app-tagline">80 chapters on the map. Drop in, loot every topic, and survive to Level 50 — Physics, Chemistry & Maths.</p>
+    <p id="efficient-daily-quote" class="efficient-daily-quote"></p>
   </header>
 
   <div class="hud" id="hud">
@@ -3723,6 +3813,10 @@
           <p style="font-size:0.83rem; color: var(--text-muted); margin-bottom:16px;">Strips out the level/XP bar, streaks, leaderboard, badges, stories, and every glow/animation — leaving just the logging forms, checklists, and tables so you can get entries done with zero distraction. Your data isn't affected; turn it off any time to get everything back.</p>
           <div class="util-bar">
             <button class="util-btn util-btn-cyan" id="efficient-toggle-btn" onclick="toggleEfficientMode()">⚡ Efficient Mode: Off</button>
+          </div>
+          <p style="font-size:0.83rem; color: var(--text-muted); margin:16px 0 10px;">💡 Daily motivational line shown on the title screen and above the app title — pick the tone. It changes automatically every day.</p>
+          <div class="util-bar">
+            <button class="util-btn util-btn-violet" id="quote-tone-toggle-btn" onclick="toggleQuoteTone()">💬 Quote Tone: Normal</button>
           </div>
         </div>
       </div>
@@ -4756,6 +4850,116 @@ function updateHapticsToggleUI() {
 
 let efficientMode = false;
 
+// A new quote is picked deterministically each calendar day (day-of-year mod length),
+// so it's stable all day, changes at midnight, and needs no server/storage.
+// Two tones are offered — Normal (casual, hype-adjacent) and Professional (measured,
+// exam-coach register) — same daily index into whichever array is currently selected,
+// so switching tone mid-day still shows "today's" message, just phrased differently.
+const QUOTES_NORMAL = [
+  "Discipline beats motivation on the days motivation doesn't show up.",
+  "One focused hour today is worth more than three distracted ones.",
+  "You don't need to feel ready. You need to start.",
+  "Every chapter you finish is one less thing standing between you and your rank.",
+  "Small consistent effort compounds — show up today, even for 20 minutes.",
+  "The syllabus doesn't care how you feel. Neither should your first hour of the day.",
+  "Progress isn't always visible day to day. Trust the process, log the work.",
+  "Hard problems today are easy marks in the exam tomorrow.",
+  "You're not behind. You're exactly where consistent effort will take you.",
+  "Revise what you learned yesterday before you learn something new today.",
+  "The version of you that clears this exam is built one solved PYQ at a time.",
+  "Comparison steals focus. Your only competition is yesterday's syllabus coverage.",
+  "Tired is not the same as done. Finish the set, then rest.",
+  "A bad day of studying still beats a day of not studying at all.",
+  "Weak chapters don't stay weak if you keep returning to them.",
+  "You won't remember how tired you felt. You'll remember what you finished.",
+  "Every mistake in practice is a mistake you won't make in the real exam.",
+  "Momentum is fragile — protect today's streak, it's easier than rebuilding it.",
+  "Nobody sees the hours you put in alone. The result will.",
+  "Pick one weak topic. Attack it for 25 minutes. Repeat tomorrow.",
+  "You've already survived every hard day before this one. This one's no different.",
+  "Studying smart still requires studying. Don't let 'smart' become an excuse.",
+  "The goal isn't to feel motivated. It's to build a habit that doesn't need it.",
+  "Today's effort is a message to your future self. Make it a good one.",
+  "Focus on the next question, not the whole syllabus. One at a time.",
+  "Confidence in the exam hall is built quietly, months before, right now.",
+  "Log it even if it was a small session — small logged beats big imagined.",
+  "You're allowed to be tired and still show up for one focused block."
+];
+const QUOTES_PROFESSIONAL = [
+  "Consistency in daily preparation is the strongest predictor of exam-day performance.",
+  "Prioritize high-yield chapters first; allocate remaining time to reinforcement.",
+  "Deliberate, spaced revision outperforms long uninterrupted study sessions.",
+  "Track your weak areas objectively and schedule targeted practice for them.",
+  "A structured routine reduces reliance on motivation and improves retention.",
+  "Review yesterday's material before starting new content — this consolidates memory.",
+  "Measured, incremental progress across the syllabus compounds over the preparation cycle.",
+  "Accuracy on previous years' questions is a reliable indicator of readiness.",
+  "Time-bound practice under exam-like conditions builds pacing and composure.",
+  "Identify recurring error patterns in mistakes and address the underlying concept.",
+  "Balanced coverage across subjects prevents last-minute gaps before the exam.",
+  "Short, focused sessions with clear objectives are more effective than open-ended study.",
+  "Maintaining a study log allows you to make evidence-based adjustments to your plan.",
+  "Rest is part of an effective preparation strategy, not a deviation from it.",
+  "Regularly revisiting core concepts strengthens long-term retention over rote repetition.",
+  "Set specific, measurable goals for each study session rather than vague targets.",
+  "Preparation quality is judged by understanding, not just hours logged.",
+  "Systematic revision of formulae and derivations reduces avoidable errors under pressure.",
+  "Analyze full-length tests thoroughly — the review matters more than the score.",
+  "A calm, methodical approach to difficult topics yields better long-term results than intensity alone.",
+  "Sustainable daily effort is more valuable than sporadic high-intensity study.",
+  "Address foundational gaps early; they compound into larger issues in advanced topics.",
+  "Objective self-assessment is a prerequisite for effective time allocation.",
+  "Steady preparation reduces exam-day uncertainty and supports better decision-making.",
+  "Plan each week around measurable outcomes: chapters covered, tests attempted, errors resolved.",
+  "Discipline in preparation translates directly into composure during the examination.",
+  "Incremental mastery of fundamentals is the most reliable path to a strong result.",
+  "Treat each study session as an investment with a specific, trackable return."
+];
+
+let quoteTone = 'normal'; // 'normal' | 'professional'
+
+async function loadQuoteTonePref() {
+  try {
+    const saved = await loadKey('jee-quote-tone');
+    quoteTone = (saved === 'professional') ? 'professional' : 'normal';
+  } catch (e) { quoteTone = 'normal'; }
+  updateQuoteToneUI();
+  renderEfficientDailyQuote();
+}
+
+async function saveQuoteTonePref() {
+  try { await localDB.set('jee-quote-tone', quoteTone, false); } catch (e) { /* ignore */ }
+}
+
+function toggleQuoteTone() {
+  quoteTone = quoteTone === 'normal' ? 'professional' : 'normal';
+  updateQuoteToneUI();
+  renderEfficientDailyQuote();
+  saveQuoteTonePref();
+  if (typeof SFX !== 'undefined') SFX.play('click');
+}
+
+function updateQuoteToneUI() {
+  const btn = document.getElementById('quote-tone-toggle-btn');
+  if (btn) btn.innerText = quoteTone === 'professional' ? '💬 Quote Tone: Professional' : '💬 Quote Tone: Normal';
+}
+
+function getDailyMotivationalQuote() {
+  const pool = quoteTone === 'professional' ? QUOTES_PROFESSIONAL : QUOTES_NORMAL;
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now - start) / 86400000);
+  return pool[dayOfYear % pool.length];
+}
+
+function renderEfficientDailyQuote() {
+  const quoteText = '💡 ' + getDailyMotivationalQuote();
+  const headerEl = document.getElementById('efficient-daily-quote');
+  if (headerEl) headerEl.textContent = quoteText;
+  const splashEl = document.getElementById('splash-daily-quote');
+  if (splashEl) splashEl.textContent = quoteText;
+}
+
 async function loadEfficientModePref() {
   try {
     const saved = await loadKey('jee-efficient-mode');
@@ -4777,6 +4981,7 @@ function toggleEfficientMode() {
 
 function applyEfficientMode() {
   document.body.classList.toggle('efficient-mode', efficientMode);
+  renderEfficientDailyQuote();
   const btn = document.getElementById('efficient-toggle-btn');
   if (btn) btn.innerText = efficientMode ? '⚡ Efficient Mode: On' : '⚡ Efficient Mode: Off';
   const splashBtn = document.getElementById('splash-efficient-toggle-btn');
@@ -4786,8 +4991,10 @@ function applyEfficientMode() {
     headerBtn.classList.toggle('active', efficientMode);
     headerBtn.title = efficientMode ? 'Efficient Mode: On' : 'Efficient Mode: Off';
   }
-  // Progress and Social are dashboards/distractions, not entry work — bounce back to Practice.
-  if (efficientMode && typeof activeCategory !== 'undefined' && (activeCategory === 'progress' || activeCategory === 'social')) {
+  // Track, Progress, and Social are all hidden nav categories in Efficient Mode —
+  // bounce back to Practice (the actual logging work) if currently on any of them.
+  if (efficientMode && typeof activeCategory !== 'undefined' &&
+      (activeCategory === 'track' || activeCategory === 'progress' || activeCategory === 'social')) {
     switchCategory('practice');
   }
   if (typeof renderChipRow === 'function') renderChipRow();
@@ -6487,6 +6694,9 @@ function renderSubjectStories() {
 }
 
 let selectedAnalysisSubject = 'physics'; // Chapter Analysis tab defaults to Physics so it's never blank
+let analysisSearchQuery = '';
+let analysisPriorityFilter = 'all'; // 'all' | 'High' | 'Medium' | 'Low'
+let analysisSortMode = 'priority'; // 'priority' | 'weight' | 'alpha'
 let currentPieRows = []; // the chapters currently plotted in the pie chart, for click-to-inspect
 
 function showPieSliceInfo(index) {
@@ -6517,6 +6727,7 @@ function showPieSliceInfo(index) {
 
 function viewSubjectAnalysis(subjectKey) {
   selectedAnalysisSubject = subjectKey;
+  analysisSearchQuery = '';
   renderSubjectAnalysisDetail();
   SFX.play('click');
 }
@@ -6773,6 +6984,36 @@ function jumpToRoadmapChapter(subjectKey, chapterName) {
   }
 }
 
+function setAnalysisSearch(value) {
+  analysisSearchQuery = value;
+  const input = document.getElementById('analysis-search-input');
+  const caret = input ? input.selectionStart : null;
+  renderSubjectAnalysisDetail();
+  const newInput = document.getElementById('analysis-search-input');
+  if (newInput) {
+    newInput.focus();
+    if (caret != null) { try { newInput.setSelectionRange(caret, caret); } catch (e) {} }
+  }
+}
+
+function setAnalysisPriorityFilter(p) {
+  analysisPriorityFilter = p;
+  SFX.play('click');
+  renderSubjectAnalysisDetail();
+}
+
+function setAnalysisSort(mode) {
+  analysisSortMode = mode;
+  SFX.play('click');
+  renderSubjectAnalysisDetail();
+}
+
+function resetAnalysisFilters() {
+  analysisSearchQuery = '';
+  analysisPriorityFilter = 'all';
+  renderSubjectAnalysisDetail();
+}
+
 function renderSubjectAnalysisDetail() {
   const el = document.getElementById('subject-analysis-detail');
   if (!el) return;
@@ -6791,7 +7032,24 @@ function renderSubjectAnalysisDetail() {
     .filter(r => r.a);
 
   const priorityRank = { High: 0, Medium: 1, Low: 2 };
-  rows.sort((a, b) => (priorityRank[a.a.priority] ?? 3) - (priorityRank[b.a.priority] ?? 3));
+  const sortRows = arr => {
+    const sorted = [...arr];
+    if (analysisSortMode === 'weight') {
+      sorted.sort((a, b) => (b.a.weightagePct ?? b.a.pool ?? -1) - (a.a.weightagePct ?? a.a.pool ?? -1));
+    } else if (analysisSortMode === 'alpha') {
+      sorted.sort((a, b) => a.ch.name.localeCompare(b.ch.name));
+    } else {
+      sorted.sort((a, b) => (priorityRank[a.a.priority] ?? 3) - (priorityRank[b.a.priority] ?? 3));
+    }
+    return sorted;
+  };
+  rows.sort((a, b) => (priorityRank[a.a.priority] ?? 3) - (priorityRank[b.a.priority] ?? 3)); // base order for bar chart / year data, unaffected by search/filter
+
+  // Search + priority-filter applied only to the chapter card list below (bar chart / year chart stay showing the full subject)
+  const q = analysisSearchQuery.trim().toLowerCase();
+  let visibleRows = sortRows(rows);
+  if (analysisPriorityFilter !== 'all') visibleRows = visibleRows.filter(r => r.a.priority === analysisPriorityFilter);
+  if (q) visibleRows = visibleRows.filter(r => r.ch.name.toLowerCase().includes(q));
 
   const missingChapters = subject.chapters.filter(ch => !getChapterAnalysis(ch.id));
   const missing = missingChapters.length;
@@ -6803,7 +7061,7 @@ function renderSubjectAnalysisDetail() {
     Low: { color: 'var(--text-muted)', bg: 'rgba(255,255,255,0.03)', label: 'Lower Yield' },
     Medium: { color: 'var(--gold-bright)', bg: 'rgba(255,207,61,0.05)', label: 'Moderate' }
   };
-  const chapterCardsHtml = rows.map(({ ch, a }) => {
+  const chapterCardsHtml = visibleRows.length ? visibleRows.map(({ ch, a }) => {
     const emoji = a.priority === 'High' ? '⬆️' : a.priority === 'Low' ? '⬇️' : '➡️';
     const pm = priorityMeta[a.priority] || priorityMeta.Medium;
     const weightage = a.weightagePct != null ? a.weightagePct + '%' : null;
@@ -6833,7 +7091,7 @@ function renderSubjectAnalysisDetail() {
       </div>` : ''}
       ${a.plan ? `<div class="ac-plan">${a.plan}</div>` : ''}
     </div>`;
-  }).join('');
+  }).join('') : `<div class="trend-chart-empty">No chapters match "${analysisSearchQuery}"${analysisPriorityFilter !== 'all' ? ` in ${analysisPriorityFilter} priority` : ''}. <span style="cursor:pointer; text-decoration:underline; color:var(--gold-bright);" onclick="resetAnalysisFilters()">Clear filters</span></div>`;
 
   // ---- Bar chart: chapter weight (weightagePct if available, else pool as fallback measure) ----
   const barRows = rows
@@ -6896,15 +7154,32 @@ function renderSubjectAnalysisDetail() {
         ? ` <strong>${missing} chapter${missing === 1 ? '' : 's'} not shown</strong> — ${missingChapters.map(c => c.name).join(', ')} — not part of the JEE Advanced syllabus (Main-only topic${missing === 1 ? '' : 's'}).`
         : ` (${missing} chapter${missing === 1 ? '' : 's'} not covered by the source data.)`) : ''}</p>
 
-    <div class="analysis-section-block" style="margin-top:0; padding-top:0; border-top:none;">
-      <div class="mock-section-title">📶 Chapter Weight — Bar View</div>
-      ${barChartHtml}
+    <div class="analysis-toolbar">
+      <input type="text" id="analysis-search-input" class="analysis-search-input" placeholder="🔍 Search chapters…"
+        value="${analysisSearchQuery.replace(/"/g, '&quot;')}" oninput="setAnalysisSearch(this.value)" />
+      <select id="analysis-sort-select" class="analysis-sort-select" onchange="setAnalysisSort(this.value)">
+        <option value="priority" ${analysisSortMode === 'priority' ? 'selected' : ''}>Sort: Priority</option>
+        <option value="weight" ${analysisSortMode === 'weight' ? 'selected' : ''}>Sort: Weight ↓</option>
+        <option value="alpha" ${analysisSortMode === 'alpha' ? 'selected' : ''}>Sort: A–Z</option>
+      </select>
+    </div>
+    <div class="analysis-filter-chips">
+      ${['all', 'High', 'Medium', 'Low'].map(p => `
+        <span class="analysis-filter-chip ${analysisPriorityFilter === p ? 'active' : ''}" data-p="${p}" onclick="setAnalysisPriorityFilter('${p}')">
+          ${p === 'all' ? 'All' : p === 'High' ? '⬆️ High' : p === 'Medium' ? '➡️ Medium' : '⬇️ Low'}
+        </span>`).join('')}
+      <span class="analysis-result-count">${visibleRows.length}/${rows.length} shown</span>
     </div>
 
     <div class="analysis-chapter-list">${chapterCardsHtml}</div>
 
     <div class="analysis-section-block">
       ${yearSectionHtml}
+    </div>
+
+    <div class="analysis-section-block">
+      <div class="mock-section-title">📶 Chapter Weight — Bar View</div>
+      ${barChartHtml}
     </div>
   `;
 }
@@ -7288,7 +7563,7 @@ function buildSidebarNav() {
         ${t.qcount ? `<span class="sl-qcount" id="side-tabq-${t.qcount}">0</span>` : ''}
       </button>`;
     }).join('');
-    return `<div class="sidebar-group">
+    return `<div class="sidebar-group" data-cat="${catKey}">
       <div class="sidebar-group-label">${catLabel.icon} ${catLabel.text}</div>
       ${links}
     </div>`;
@@ -7313,7 +7588,7 @@ function renderChipRow() {
   const activeTabEl = document.querySelector('.tab-content.active');
   const activeTabId = activeTabEl ? activeTabEl.id : null;
   row.innerHTML = cat.tabs.map(t => `
-    <button class="tab-btn ${t.id === activeTabId ? 'active' : ''}" onclick="switchTab('${t.id}', this)">
+    <button class="tab-btn ${t.id === activeTabId ? 'active' : ''}" data-tab="${t.id}" onclick="switchTab('${t.id}', this)">
       ${t.label}${t.qcount ? `<span class="tab-qcount" id="tabq-${t.qcount}">0</span>` : ''}
     </button>`).join('');
 
@@ -11765,6 +12040,7 @@ async function init() {
   SFX.preloadFiles();
   await loadHapticsPref();
   await loadEfficientModePref();
+  await loadQuoteTonePref();
   await loadGameModePref();
   await loadThemePref();
   await loadFontPref();
