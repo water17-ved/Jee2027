@@ -1,93 +1,54 @@
 {
-  "id": "/",
   "name": "JEE Battle Royale Tracker",
   "short_name": "JEE Tracker",
-  "description": "A gamified JEE Mains + Advanced prep tracker with chapter checklists, test logging, streaks, weak-spot analysis, and a live leaderboard.",
+  "description": "Offline JEE Mains & Advanced syllabus, test, and daily practice tracker.",
   "start_url": "./index.html",
   "scope": "./",
-  "lang": "en-US",
-  "dir": "ltr",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait-primary",
   "background_color": "#0a0710",
   "theme_color": "#170d20",
-  "categories": ["education", "productivity", "utilities"],
-  "prefer_related_applications": false,
-  "related_applications": [],
-  "launch_handler": {
-    "client_mode": "auto"
-  },
   "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshots/narrow-daily.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Daily tab — schedule, targets, and streak"
-    },
-    {
-      "src": "screenshots/narrow-advanced.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "JEE Advanced zone with per-chapter reference tracking"
-    },
-    {
-      "src": "screenshots/wide-dashboard.png",
-      "sizes": "1280x800",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Full dashboard on a wide/tablet screen"
-    }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192-maskable.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
     {
-      "name": "Mark Present Today",
+      "name": "Mark Present",
       "short_name": "Present",
-      "description": "Log today's attendance in one tap",
+      "description": "Mark yourself present today and keep the streak alive",
       "url": "./index.html?action=present",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "name": "Advanced Zone",
-      "short_name": "Advanced",
-      "description": "Jump straight to the JEE Advanced tracker",
-      "url": "./index.html?tab=advanced",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Daily",
-      "short_name": "Daily",
-      "description": "Open today's schedule and targets",
+      "name": "Daily Qs",
+      "short_name": "Daily Qs",
+      "description": "Log today's practice questions",
       "url": "./index.html?tab=daily",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Battle Log",
+      "short_name": "Battle Log",
+      "description": "Danger Zone, test logs, and mock score trend",
+      "url": "./index.html?tab=tests",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Notes",
+      "short_name": "Notes",
+      "description": "Reference material, including the Organic Reactions field guide",
+      "url": "./index.html?tab=notes",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Data & Backup",
+      "short_name": "Data",
+      "description": "Backup, restore, weekly report, reset",
+      "url": "./index.html?tab=data",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

@@ -1,19 +1,25 @@
 # 🔥 JEE Battle Royale Tracker
 
 A gamified JEE Mains + Advanced prep tracker: chapter checklists, a "Solo Leveling"
-style Advanced zone, test logging, streaks, weak-spot radar, and an optional live
-leaderboard. Installable as a PWA (works offline once loaded).
+style Advanced zone, test logging, streaks, weak-spot radar, an optional live
+leaderboard, and now a **Notes** section for reference material. Installable as a
+PWA (works offline once loaded — except the Notes/Organic Reactions page, which
+needs internet).
 
 ## What's in this zip
 
 | File | Purpose |
 |---|---|
-| `index.html` | The entire app — HTML, CSS, and JS in one file. |
-| `manifest.json` | Full PWA manifest — see "Manifest / PWABuilder score" below. |
+| `index.html` | The entire tracker app — HTML, CSS, and JS in one file. |
+| `organic.html` | JEE Organic Chemistry field guide (457 reactions, 12 chapters), embedded into the tracker via the Notes tab. |
+| `manifest.json` | PWA manifest — name, icons, theme colors, install shortcuts. |
 | `sw.js` | Service worker — caches the app shell so it works offline once installed. |
-| `icon-192.png` / `icon-512.png` | App icon, generated from the logo you provided (each has an `"any"` and a `"maskable"` entry in the manifest). |
-| `screenshots/` | 3 real screenshots of the running app (2 phone-size, 1 wide/tablet-size), referenced by the manifest's `screenshots` field. |
 | `README.md` | This file. |
+
+**Note:** `icon-192.png`, `icon-512.png`, and their maskable variants are **not**
+included in this zip — the manifest and service worker reference them by filename,
+so make sure your existing icon files (already in your repo) stay in the same
+folder as these files.
 
 ## Running it
 
@@ -21,74 +27,75 @@ Any static file host works — there's no build step and no backend required.
 
 - **Quickest test:** open `index.html` directly in a browser (some install/offline
   features need a real server, but the app itself works fine).
-- **Proper hosting:** upload all 5 files to the **same folder** on any static host
-  (GitHub Pages, Netlify, Vercel, Cloudflare Pages, a plain web server, etc.) and
-  visit `index.html`. Keep the filenames exactly as they are — `manifest.json`,
-  `sw.js`, and the icons are referenced by name from `index.html`.
-- **Install as an app:** once hosted over HTTPS, most browsers show an "Install"
-  / "Add to Home Screen" prompt automatically.
+- **Proper hosting:** upload all files (these 4 + your existing icon files) to the
+  **same folder** on any static host (GitHub Pages, Netlify, Vercel, Cloudflare
+  Pages, a plain web server, etc.) and visit `index.html`. Keep the filenames
+  exactly as they are — `organic.html`, `manifest.json`, `sw.js`, and the icons
+  are all referenced by name from `index.html`.
+- **Install as an app:** once hosted over HTTPS, most browsers show an "Install" /
+  "Add to Home Screen" prompt automatically.
 
-## What was fixed: laggy Advanced section
+## What's new: the Notes tab
 
-The Advanced tab's background had a "system window" glow effect (`.advanced-zone::before`)
-that animated `box-shadow` and `border-color` directly, on an infinite 3.6s loop.
-That pseudo-element stretches across the **entire** Advanced tab — including every
-chapter card inside it — so the browser was repainting that whole (often very tall)
-area on every animation frame, forever, any time the tab was open. That's what caused
-the jank/lag.
+A new **📓 Notes** section was added as its own nav category (in both the desktop
+sidebar and the mobile bottom nav), separate from the checklist/XP-tracked
+Physics/Chemistry/Maths tabs — it's meant to hold reference material you browse
+rather than track progress against.
 
-**Fix:** the glow now only animates `opacity`, which is GPU-composited and effectively
-free, instead of the underlying box-shadow/border values. The static "peak brightness"
-look is baked in once, and the pulse is a fade rather than a color recompute. The
-drifting particle effect (`::after`) was already transform/opacity-based and untouched.
-Also added:
-- `contain: layout style` on `.advanced-zone` so paint work inside it can't force the
-  browser to re-check layout elsewhere on the page.
-- `will-change: opacity` hints on the animated pseudo-elements.
-- A `prefers-reduced-motion` rule that turns these decorative animations off entirely
-  for users who've asked their OS/browser to reduce motion.
+Right now it has one card:
 
-No feature, data, or layout logic was touched — this is a pure rendering-performance fix.
-The Advanced tab should now scroll and interact smoothly, especially on phones.
+- **⚗ Organic Reactions** — opens as its own sub-page (with a "← Back to Notes"
+  button) embedding `organic.html` in an iframe. This is a separate single-file
+  site (see its own section below) that needs an internet connection to load,
+  since it pulls Tailwind CSS, Font Awesome, and MathJax from CDNs.
 
-## Manifest / PWABuilder score
+More reference material can be added later as additional cards in the same Notes
+grid without touching the rest of the app.
 
-`manifest.json` was expanded to cover essentially every field PWABuilder's
-report card checks for:
+A **Notes** shortcut was also added to `manifest.json`, alongside the existing
+Mark Present / Daily Qs / Battle Log / Data shortcuts, so long-pressing the
+installed app icon can jump straight to Notes.
 
-- **Required:** `name`, `short_name`, `icons` (incl. a real 512×512), `start_url`.
-- **Recommended:** `description`, `display`, `background_color`, `theme_color`,
-  `orientation`, `screenshots` (real ones — see below), a maskable icon,
-  `categories`, `shortcuts`.
-- **Optional / extra credit:** `id`, `scope`, `lang`, `dir`, `display_override`,
-  `prefer_related_applications` + `related_applications`, `launch_handler`.
+## About `organic.html` (Organic Reactions field guide)
 
-Two things worth knowing:
+A single-file, self-contained reference site for JEE Main & Advanced Organic
+Chemistry:
 
-1. **Screenshots are real, not placeholders.** I rendered the actual app (phone
-   size ×2, tablet/wide size ×1) and saved them into `screenshots/`. If you
-   redesign a tab significantly, swap in fresh ones — PWABuilder checks that
-   the files exist and match their declared `sizes`, not that they're
-   necessarily current.
-2. **`iarc_rating_id` was intentionally left out.** That field has to be a real
-   ID issued by the IARC after you fill out their age-rating questionnaire
-   (free, ~5 min, at https://www.globalratings.com) — a made-up value would
-   either be ignored or flagged as invalid. Add it once you have one; it's
-   the one recommended/optional field this manifest doesn't cover.
-3. **The maskable icons currently just reuse the full-bleed icon files.** That
-   passes PWABuilder's "has a maskable icon" check, but a *true* maskable icon
-   keeps its important content inside the center ~80% safe zone so Android
-   doesn't crop it into a circle/squircle awkwardly. Worth generating a
-   properly-padded maskable version later (e.g. via
-   https://maskable.app/editor) — swap the two `"purpose": "maskable"` icon
-   entries in `manifest.json` to point at it.
+- **457 reactions** across 12 chapters (Alkanes → General Organic Chemistry), each
+  with a mechanism, mnemonic ("Read Aloud" text-to-speech), intermediate type, and
+  JEE exam notes.
+- **Virtualized list UI** — only the rows currently scrolled into view are ever
+  real DOM elements, so the page stays smooth even with hundreds of entries.
+- Search + classification/level filters.
+- Click any reaction to open its full detail (LaTeX-rendered equation via
+  MathJax) in the side panel.
+- Text-to-speech ("Read Aloud") uses the browser's built-in Speech Synthesis API —
+  availability and voice quality vary by browser/OS.
+- **Requires internet on first load** — Tailwind CSS, Font Awesome, and MathJax
+  are loaded from CDNs.
+
+It can also be opened standalone (just visit `organic.html` directly) — it doesn't
+depend on the tracker to function.
+
+## Manifest / PWABuilder notes
+
+- **Icons:** this manifest points at `icon-192.png` / `icon-512.png` (+ maskable
+  variants) — same filenames as before, so your existing icon files don't need to
+  change.
+- **`screenshots`** is intentionally left out — no screenshot images were included
+  in this bundle. Add real screenshots later and add a `screenshots` array (plus
+  matching entries in `sw.js`'s `ASSETS` list) if you want that PWABuilder credit.
+- **`iarc_rating_id`** is also left out — it has to be a real ID issued by the IARC
+  after filling out their free age-rating questionnaire at
+  https://www.globalratings.com. A made-up value would be ignored or flagged.
 
 ## Optional: live shared leaderboard (Firebase)
 
-Everything in the app — checklists, tests, streaks, coaching log, daily targets —
-is stored **locally on-device** and works with zero setup. The only feature that
-needs an external service is the **live, cross-device leaderboard**. It's optional;
-without it, the leaderboard tab still works but only shows data from that one device.
+Everything in the tracker — checklists, tests, streaks, coaching log, daily
+targets — is stored **locally on-device** and works with zero setup. The only
+feature that needs an external service is the **live, cross-device leaderboard**.
+It's optional; without it, the leaderboard tab still works but only shows data
+from that one device.
 
 To enable it, search `index.html` for `firebaseConfig` (there are two — a primary
 config for login + leaderboard, and a secondary one for analytics) and follow the
@@ -106,5 +113,8 @@ numbered setup steps in the comment directly above it. In short:
 - The service worker (`sw.js`) only activates once the app is actually hosted (not
   when opened as a local file or previewed in a sandboxed environment) — this is
   expected and by design.
-- All 5 files must stay in the same folder for icons/manifest/service worker paths
-  to resolve correctly.
+- All files (this bundle + your icon files) must stay in the same folder for
+  icons/manifest/service worker/organic.html paths to resolve correctly.
+- The Organic Reactions page is cached by the service worker as part of the app
+  shell, but its CDN dependencies (Tailwind/Font Awesome/MathJax) are not — so it
+  still requires a live connection to render properly, even once installed.

@@ -3777,6 +3777,31 @@
     </div>
   </div>
 
+  <div id="notes" class="tab-content">
+    <div class="subject-summary">
+      <h2>📓 Notes</h2>
+      <p style="font-size:0.83rem; color: var(--text-muted); margin: 4px 0 0 0;">Reference material and field guides — outside the checklist/XP system, just for quick lookup.</p>
+    </div>
+    <div class="achievements-grid">
+      <div class="chapter-card" style="cursor:pointer;" onclick="switchTab('organic')">
+        <h3 style="margin:0 0 6px 0;">⚗ Organic Reactions</h3>
+        <p style="font-size:0.82rem; color: var(--text-muted); margin:0;">457 reactions across 12 chapters — mechanisms, mnemonics, JEE notes.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="organic" class="tab-content">
+    <div class="subject-summary chem-theme">
+      <button class="add-btn" onclick="switchTab('notes')" style="margin-bottom:10px;">← Back to Notes</button>
+      <h2>⚗ Organic Reactions — Field Guide</h2>
+      <p style="font-size:0.83rem; color: var(--text-muted); margin: 4px 0 0 0;">Loads from organic.html hosted alongside this app — needs an internet connection (uses Tailwind/MathJax/Font Awesome from CDN).</p>
+    </div>
+    <div style="padding:0; overflow:hidden; border-radius:10px;">
+      <iframe src="organic.html" title="JEE Organic Chemistry Field Guide" loading="lazy"
+        style="width:100%; height:80vh; min-height:520px; border:0; display:block; background:#0a0d12;"></iframe>
+    </div>
+  </div>
+
   <div id="data" class="tab-content">
     <div class="settings-group">
       <div class="settings-group-label">🎨 Customization</div>
@@ -4159,6 +4184,9 @@
         <path class="trend" d="M4 12 L10 7 L16 3" stroke-width="1.6"/>
       </svg>
     </span><span class="bn-label">Progress</span>
+  </button>
+  <button class="bottom-nav-btn" data-cat="notes" onclick="switchCategory('notes')">
+    <span class="bn-icon">📓</span><span class="bn-label">Notes</span>
   </button>
   <button class="bottom-nav-btn" data-cat="social" onclick="switchCategory('social')">
     <span class="bn-icon">
@@ -7517,6 +7545,9 @@ const NAV_CATEGORIES = {
     { id: 'achievements', label: '🏆 Booyah Badges' },
     { id: 'stories', label: '🎬 Stories' }
   ]},
+  notes: { label: '📓 Notes', tabs: [
+    { id: 'notes', label: '📓 Notes' }
+  ]},
   social: { label: '🌐 Social', tabs: [
     { id: 'league', label: '🏅 League' },
     { id: 'leaderboard', label: '🌐 Leaderboard' }
@@ -7539,7 +7570,7 @@ Object.keys(NAV_CATEGORIES).forEach(cat => {
 TAB_TO_CATEGORY['weekly'] = 'track';
 
 let activeCategory = 'practice';
-const lastTabInCategory = { practice: 'daily', track: 'physics', progress: 'analysis', social: 'league', settings: 'data' };
+const lastTabInCategory = { practice: 'daily', track: 'physics', progress: 'analysis', notes: 'notes', social: 'league', settings: 'data' };
 
 // Splits a nav label like "📝 Daily Qs" into its leading icon and the rest of the text,
 // so the desktop sidebar can lay them out in separate columns (icon | label | count badge).
@@ -7600,7 +7631,7 @@ function renderChipRow() {
   // HUD (level/XP/streak/exam countdown) is only relevant to actual studying —
   // hide it while browsing Social or Settings so those screens feel less cluttered.
   const hudEl = document.getElementById('hud');
-  if (hudEl) hudEl.style.display = (activeCategory === 'social' || activeCategory === 'settings') ? 'none' : '';
+  if (hudEl) hudEl.style.display = (activeCategory === 'social' || activeCategory === 'settings' || activeCategory === 'notes') ? 'none' : '';
 
   // The big title/tagline/mode-switch header is only shown on the Practice section —
   // everywhere else it's just visual weight pushing real content down.
