@@ -4185,9 +4185,6 @@
       </svg>
     </span><span class="bn-label">Progress</span>
   </button>
-  <button class="bottom-nav-btn" data-cat="notes" onclick="switchCategory('notes')">
-    <span class="bn-icon">📓</span><span class="bn-label">Notes</span>
-  </button>
   <button class="bottom-nav-btn" data-cat="social" onclick="switchCategory('social')">
     <span class="bn-icon">
       <svg viewBox="0 0 24 24" class="icon-users">
@@ -7535,7 +7532,8 @@ const NAV_CATEGORIES = {
     { id: 'chemistry', label: '🧪 Chemistry', qcount: 'chemistry' },
     { id: 'maths', label: '➗ Mathematics', qcount: 'maths' },
     { id: 'advanced', label: '🌌 JEE Advanced', qcount: 'advanced' },
-    { id: 'weekly', label: '📆 Weekly Progress' }
+    { id: 'weekly', label: '📆 Weekly Progress' },
+    { id: 'notes', label: '📓 Notes' }
   ]},
   progress: { label: '📈 Progress', tabs: [
     { id: 'weekly', label: '📆 Weekly Progress' },
@@ -7544,9 +7542,6 @@ const NAV_CATEGORIES = {
     { id: 'roadmap', label: '🗺 Roadmap' },
     { id: 'achievements', label: '🏆 Booyah Badges' },
     { id: 'stories', label: '🎬 Stories' }
-  ]},
-  notes: { label: '📓 Notes', tabs: [
-    { id: 'notes', label: '📓 Notes' }
   ]},
   social: { label: '🌐 Social', tabs: [
     { id: 'league', label: '🏅 League' },
@@ -7570,7 +7565,7 @@ Object.keys(NAV_CATEGORIES).forEach(cat => {
 TAB_TO_CATEGORY['weekly'] = 'track';
 
 let activeCategory = 'practice';
-const lastTabInCategory = { practice: 'daily', track: 'physics', progress: 'analysis', notes: 'notes', social: 'league', settings: 'data' };
+const lastTabInCategory = { practice: 'daily', track: 'physics', progress: 'analysis', social: 'league', settings: 'data' };
 
 // Splits a nav label like "📝 Daily Qs" into its leading icon and the rest of the text,
 // so the desktop sidebar can lay them out in separate columns (icon | label | count badge).
@@ -7631,7 +7626,7 @@ function renderChipRow() {
   // HUD (level/XP/streak/exam countdown) is only relevant to actual studying —
   // hide it while browsing Social or Settings so those screens feel less cluttered.
   const hudEl = document.getElementById('hud');
-  if (hudEl) hudEl.style.display = (activeCategory === 'social' || activeCategory === 'settings' || activeCategory === 'notes') ? 'none' : '';
+  if (hudEl) hudEl.style.display = (activeCategory === 'social' || activeCategory === 'settings' || activeTabId === 'notes') ? 'none' : '';
 
   // The big title/tagline/mode-switch header is only shown on the Practice section —
   // everywhere else it's just visual weight pushing real content down.
